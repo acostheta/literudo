@@ -1,48 +1,96 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 export default function Navbar() {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+
+  const openLogin = () => {
+    setIsRegisterModalOpen(false);
+    setIsLoginModalOpen(true);
+  };
+
+  const openRegister = () => {
+    setIsLoginModalOpen(false);
+    setIsRegisterModalOpen(true);
+  };
+
   return (
-    <nav className="glass-effect" style={{
-      position: 'sticky',
-      top: 0,
-      width: '100%',
-      zIndex: 1000,
-      padding: '1.2rem 0',
-      transition: 'var(--transition)'
-    }}>
-      <div className="container" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
+    <>
+      <nav style={{
+        position: 'sticky',
+        top: 0,
+        width: '100%',
+        zIndex: 900,
+        background: 'var(--background)',
+        borderBottom: '1px solid var(--border)',
+        padding: '1rem 2rem'
       }}>
-        <Link href="/" style={{
-          fontSize: '1.6rem',
-          fontWeight: '700',
-          background: 'linear-gradient(to right, var(--primary), var(--secondary))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          letterSpacing: '-0.5px'
-        }}>
-          Literudo Blog
-        </Link>
-        
-        <ul style={{
+        <div style={{
           display: 'flex',
-          gap: '2.5rem',
-          alignItems: 'center'
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          maxWidth: '1200px',
+          margin: '0 auto'
         }}>
-          <li><Link href="/">Home</Link></li>
-          <li><Link href="/posts">Explorar</Link></li>
-          <li><button className="glass-effect" style={{
-            padding: '0.6rem 1.4rem',
-            borderRadius: '12px',
-            color: 'var(--foreground)',
-            fontWeight: '600'
-          }}>Suscriberse</button></li>
-        </ul>
-      </div>
-    </nav>
+          <Link href="/blog" style={{
+            color: 'var(--foreground-muted)',
+            fontSize: '0.9rem',
+            fontWeight: '500'
+          }}>
+            Explorar
+          </Link>
+          
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            alignItems: 'center'
+          }}>
+            <button 
+              onClick={openLogin}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'transparent',
+                color: 'var(--foreground-muted)',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                fontWeight: '500'
+              }}
+            >
+              Iniciar Sesión
+            </button>
+            <button 
+              onClick={openRegister}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'var(--primary)',
+                color: '#fff',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                fontWeight: '600'
+              }}
+            >
+              Registrarse
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+        onSwitchToRegister={openRegister}
+      />
+      
+      <RegisterModal 
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onSwitchToLogin={openLogin}
+      />
+    </>
   );
 }

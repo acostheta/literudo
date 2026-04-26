@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Playfair_Display, Lora } from "next/font/google";
 import "./globals.css";
+import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,13 +27,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
-        <Navbar />
-        <main className="main-content">
-          {children}
-        </main>
-        <Footer />
+    <html lang="es">
+      <body className={`${playfair.variable} ${lora.variable}`} suppressHydrationWarning>
+        <Sidebar />
+        <div style={{
+          marginLeft: '280px',
+          minHeight: '100vh',
+          background: 'var(--background)'
+        }} className="main-wrapper">
+          <Navbar />
+          <main className="main-content">
+            {children}
+          </main>
+        </div>
+        <style jsx>{`
+          @media (max-width: 900px) {
+            .main-wrapper {
+              margin-left: 0 !important;
+            }
+          }
+        `}</style>
       </body>
     </html>
   );
