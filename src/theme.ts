@@ -34,6 +34,13 @@ const theme = createTheme({
         },
       },
     },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+        },
+      },
+    },
   },
 });
 

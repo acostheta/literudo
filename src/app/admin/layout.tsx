@@ -39,7 +39,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       <CssBaseline />
       <AppBar
         position="fixed"
-        sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px`, bgcolor: "white", color: "text.primary", boxShadow: "none", borderBottom: "1px solid #eee" }}
+        sx={{ 
+          width: `calc(100% - ${drawerWidth}px)`, 
+          ml: `${drawerWidth}px`, 
+          bgcolor: "white", 
+          color: "text.primary", 
+          boxShadow: "none", 
+          borderBottom: "1px solid #eee",
+          borderRadius: 0
+        }}
       >
         <Toolbar>
           <Typography variant="h6" noWrap component="div" sx={{ fontWeight: "bold" }}>
@@ -56,6 +64,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             boxSizing: "border-box",
             bgcolor: "primary.main",
             color: "white",
+            borderRadius: 0,
+            border: "none",
           },
         }}
         variant="permanent"
@@ -80,7 +90,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 sx={{
                   py: 1.5,
                   px: 3,
-                  borderRadius: 0,
+                  borderRadius: "0 !important",
                   borderLeft: pathname === item.href ? "4px solid #fff" : "4px solid transparent",
                   "&.Mui-selected": {
                     bgcolor: "rgba(255,255,255,0.1)",
@@ -94,11 +104,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText 
-                  primary={item.name} 
-                  primaryTypographyProps={{ 
-                    fontWeight: pathname === item.href ? "bold" : "normal",
-                    fontSize: "0.95rem"
-                  }} 
+                  primary={
+                    <Typography variant="body2" sx={{ 
+                      fontWeight: pathname === item.href ? "bold" : "normal",
+                      fontSize: "0.95rem",
+                      fontFamily: "inherit"
+                    }}>
+                      {item.name}
+                    </Typography>
+                  } 
                 />
               </ListItemButton>
             </ListItem>
