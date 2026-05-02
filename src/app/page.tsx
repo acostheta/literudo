@@ -115,7 +115,7 @@ export default function Home() {
                 <Typography 
                   variant="h2" 
                   component={Link}
-                  href={`/admin/posts/${post.slug}`} // En una app real esto iría a /posts/${slug}
+                  href={`/posts/${post.slug}`}
                   sx={{ 
                     fontFamily: '"Lora", serif', 
                     fontWeight: 800, 
@@ -147,7 +147,7 @@ export default function Home() {
 
                 <Button 
                   component={Link}
-                  href={`/admin/posts/${post.slug}`}
+                  href={`/posts/${post.slug}`}
                   sx={{ 
                     color: 'primary.main', 
                     fontWeight: 800, 
