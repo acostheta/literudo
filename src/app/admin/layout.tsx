@@ -21,6 +21,7 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Article as ArticleIcon,
+  Logout as LogoutIcon,
 } from "@mui/icons-material";
 
 const drawerWidth = 240;
@@ -130,6 +131,37 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </ListItem>
           ))}
         </List>
+
+        <Box sx={{ mt: 'auto', p: 0 }}>
+          <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={async () => {
+                const supabase = (await import('@/lib/supabase/client')).createClient();
+                await supabase.auth.signOut();
+                window.location.href = '/login';
+              }}
+              sx={{
+                py: 2,
+                px: 3,
+                "&:hover": {
+                  bgcolor: "rgba(220, 53, 69, 0.2)", // Subtle red hover
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText 
+                primary={
+                  <Typography variant="body2" component="span" sx={{ fontSize: "0.95rem" }}>
+                    Cerrar Sesión
+                  </Typography>
+                } 
+              />
+            </ListItemButton>
+          </ListItem>
+        </Box>
       </Drawer>
       <Box
         component="main"
