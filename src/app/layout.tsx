@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   title: "Literudo | Admin",
   description: "Blog para Agrupación Estudiantil Literudo",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/Logo_UDO.svg",
+    apple: "/Logo_UDO.svg",
   },
 };
 

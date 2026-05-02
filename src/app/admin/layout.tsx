@@ -50,8 +50,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           borderRadius: 0
         }}
       >
-        <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: "bold" }}>
+        <Toolbar sx={{ justifyContent: 'center' }}>
+          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: "bold", textAlign: 'center' }}>
             {navItems.find(item => item.href === pathname)?.name || "Literudo Admin"}
           </Typography>
         </Toolbar>
@@ -72,18 +72,18 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         variant="permanent"
         anchor="left"
       >
-        <Box sx={{ p: 3, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+        <Box sx={{ p: 3, width: '100%', textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
           <Box 
             component="img"
-            src="/logo.png"
-            alt="Logo Literudo"
-            sx={{ width: 60, height: 60, mb: 1 }}
+            src="/Logo_UDO.svg"
+            alt="Logo UDO"
+            sx={{ width: 60, height: 60, mb: 1, mx: "auto", display: "block" }}
           />
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 0.5, letterSpacing: 1 }}>
+          <Box sx={{ width: '100%' }}>
+            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 0.5, letterSpacing: 1, textAlign: 'center' }}>
               Literudo
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <Typography variant="caption" sx={{ opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1, textAlign: 'center', display: 'block' }}>
               Admin Panel
             </Typography>
           </Box>
@@ -99,6 +99,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 sx={{
                   py: 1.5,
                   px: 3,
+                  flexDirection: 'column',
+                  alignItems: 'center',
                   borderRadius: "0 !important",
                   borderLeft: pathname === item.href ? "4px solid #fff" : "4px solid transparent",
                   "&.Mui-selected": {
@@ -109,7 +111,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   },
                 }}
               >
-                <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
+                <ListItemIcon sx={{ color: "inherit", minWidth: 0, mb: 0.5 }}>
                   {item.icon}
                 </ListItemIcon>
                 <ListItemText 
@@ -119,8 +121,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                       component="span"
                       sx={{ 
                         fontWeight: pathname === item.href ? "bold" : "normal",
-                        fontSize: "0.95rem",
-                        fontFamily: "inherit"
+                        fontSize: "0.85rem",
+                        fontFamily: "inherit",
+                        textAlign: 'center',
+                        display: 'block'
                       }}
                     >
                       {item.name}
@@ -144,17 +148,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               sx={{
                 py: 2,
                 px: 3,
+                flexDirection: 'column',
+                alignItems: 'center',
                 "&:hover": {
                   bgcolor: "rgba(220, 53, 69, 0.2)", // Subtle red hover
                 },
               }}
             >
-              <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
+              <ListItemIcon sx={{ color: "inherit", minWidth: 0, mb: 0.5 }}>
                 <LogoutIcon />
               </ListItemIcon>
               <ListItemText 
                 primary={
-                  <Typography variant="body2" component="span" sx={{ fontSize: "0.95rem" }}>
+                  <Typography variant="body2" component="span" sx={{ fontSize: "0.85rem", textAlign: 'center', display: 'block' }}>
                     Cerrar Sesión
                   </Typography>
                 } 
