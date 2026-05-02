@@ -26,6 +26,7 @@ import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   Menu as MenuIcon,
+  Home as HomeIcon,
 } from "@mui/icons-material";
 
 const DRAWER_WIDTH = 240;
@@ -180,6 +181,39 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </List>
 
         <Box sx={{ mt: 'auto', p: 0 }}>
+          <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
+          
+          <Tooltip title={collapsed ? "Ir a la página" : ""} placement="right">
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                component={Link}
+                href="/"
+                sx={{
+                  minHeight: 48,
+                  justifyContent: collapsed ? 'center' : 'initial',
+                  px: 2.5,
+                  py: 1.5,
+                  "&:hover": {
+                    bgcolor: "rgba(255,255,255,0.05)",
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ 
+                  color: "inherit", 
+                  minWidth: 0, 
+                  mr: collapsed ? 0 : 3,
+                  justifyContent: 'center',
+                }}>
+                  <HomeIcon />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Ir a la página" 
+                  sx={{ opacity: collapsed ? 0 : 1 }} 
+                />
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+
           <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
           <Tooltip title={collapsed ? "Cerrar Sesión" : ""} placement="right">
             <ListItem disablePadding sx={{ display: 'block' }}>

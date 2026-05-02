@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -36,6 +37,7 @@ interface Post {
 }
 
 export default function PostsPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -82,10 +84,19 @@ export default function PostsPage() {
         </Box>
         <Button
           variant="contained"
+          size="small"
           startIcon={<AddIcon />}
           component={Link}
           href="/admin/posts/new"
-          sx={{ borderRadius: 0, px: 3 }}
+          sx={{ 
+            borderRadius: 0, 
+            px: 2, 
+            py: 1, 
+            fontSize: '0.75rem', 
+            fontWeight: 'bold',
+            bgcolor: '#1a1a1a',
+            '&:hover': { bgcolor: '#000' }
+          }}
         >
           Nuevo Artículo
         </Button>
@@ -111,7 +122,12 @@ export default function PostsPage() {
               </TableRow>
             ) : (
               posts.map((post) => (
-                <TableRow key={post.id} hover>
+                <TableRow 
+                  key={post.id} 
+                  hover 
+                  onClick={() => router.push(`/admin/posts/${post.slug}`)}
+                  sx={{ cursor: 'pointer' }}
+                >
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>{post.title}</Typography>
                     <Typography variant="caption" color="text.secondary">/{post.slug}</Typography>
@@ -128,8 +144,11 @@ export default function PostsPage() {
                   <TableCell>
                     {new Date(post.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell align="right" onClick={(e) => e.stopPropagation()}>
                     <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <IconButton size="small" component={Link} href={`/admin/posts/${post.slug}`}>
+                        <ViewIcon fontSize="small" />
+                      </IconButton>
                       <IconButton size="small" component={Link} href={`/admin/posts/edit/${post.id}`}>
                         <EditIcon fontSize="small" />
                       </IconButton>
