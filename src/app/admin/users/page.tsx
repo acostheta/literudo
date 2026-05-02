@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   Box,
   Button,
@@ -22,6 +23,7 @@ import {
   Chip,
   IconButton,
   Collapse,
+  CircularProgress,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -30,39 +32,68 @@ import {
   Person as PersonIcon,
 } from "@mui/icons-material";
 
-interface User {
-  id: number;
+interface UserProfile {
+  id: string;
   name: string;
   email: string;
   role: string;
 }
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, name: "Admin Literudo", email: "admin@literudo.com", role: "Administrator" },
-    { id: 2, name: "Juan Perez", email: "juan@example.com", role: "Editor" },
-  ]);
-
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newUser, setNewUser] = useState({ name: "", email: "", role: "Editor" });
   const [isAdding, setIsAdding] = useState(false);
 
-  const handleAddUser = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching users:", error);
+    } else {
+      setUsers(data || []);
+    }
+    setLoading(false);
+  };
+
+  const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUser.name || !newUser.email) return;
 
-    const user: User = {
-      id: Date.now(),
-      ...newUser
-    };
+    const { data, error } = await supabase
+      .from("profiles")
+      .insert([newUser])
+      .select();
 
-    setUsers([...users, user]);
-    setNewUser({ name: "", email: "", role: "Editor" });
-    setIsAdding(false);
+    if (error) {
+      alert("Error adding user: " + error.message);
+    } else if (data) {
+      setUsers([data[0], ...users]);
+      setNewUser({ name: "", email: "", role: "Editor" });
+      setIsAdding(false);
+    }
   };
 
-  const deleteUser = (id: number) => {
+  const deleteUser = async (id: string) => {
     if (confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter(u => u.id !== id));
+      const { error } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        alert("Error deleting user: " + error.message);
+      } else {
+        setUsers(users.filter(u => u.id !== id));
+      }
     }
   };
 
@@ -107,9 +138,8 @@ export default function UsersPage() {
                 <Select
                   value={newUser.role}
                   label="Role"
-                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value as string })}
                 >
-                  <option value="Administrator">Administrator</option>
                   <MenuItem value="Administrator">Administrator</MenuItem>
                   <MenuItem value="Editor">Editor</MenuItem>
                   <MenuItem value="Viewer">Viewer</MenuItem>
@@ -134,35 +164,46 @@ export default function UsersPage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id} hover>
-                <TableCell>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <PersonIcon color="action" />
-                    <Typography variant="body2">{user.name}</Typography>
-                  </Stack>
-                </TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Chip 
-                    label={user.role} 
-                    size="small"
-                    color={user.role === "Administrator" ? "primary" : "default"}
-                    variant={user.role === "Administrator" ? "filled" : "outlined"}
-                  />
-                </TableCell>
-                <TableCell align="right">
-                  <IconButton color="error" onClick={() => deleteUser(user.id)} size="small">
-                    <DeleteIcon />
-                  </IconButton>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
+                  <CircularProgress size={40} />
+                  <Typography sx={{ mt: 2 }} variant="body2" color="text.secondary">
+                    Loading users from Supabase...
+                  </Typography>
                 </TableCell>
               </TableRow>
-            ))}
-            {users.length === 0 && (
+            ) : (
+              users.map((user) => (
+                <TableRow key={user.id} hover>
+                  <TableCell>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <PersonIcon color="action" />
+                      <Typography variant="body2">{user.name}</Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={user.role} 
+                      size="small"
+                      color={user.role === "Administrator" ? "primary" : "default"}
+                      variant={user.role === "Administrator" ? "filled" : "outlined"}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton color="error" onClick={() => deleteUser(user.id)} size="small">
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+            {!loading && users.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
                   <Typography variant="body2" color="text.secondary">
-                    No users found.
+                    No users found in the database.
                   </Typography>
                 </TableCell>
               </TableRow>

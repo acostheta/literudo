@@ -70,27 +70,36 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </Typography>
         </Box>
         <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
-        <List sx={{ px: 1, mt: 2 }}>
+        <List sx={{ mt: 2, p: 0 }}>
           {navItems.map((item) => (
-            <ListItem key={item.href} disablePadding sx={{ mb: 0.5 }}>
+            <ListItem key={item.href} disablePadding>
               <ListItemButton
                 component={Link}
                 href={item.href}
                 selected={pathname === item.href}
                 sx={{
+                  py: 1.5,
+                  px: 3,
                   borderRadius: 0,
+                  borderLeft: pathname === item.href ? "4px solid #fff" : "4px solid transparent",
                   "&.Mui-selected": {
-                    bgcolor: "rgba(255,255,255,0.15)",
+                    bgcolor: "rgba(255,255,255,0.1)",
                   },
                   "&:hover": {
-                    bgcolor: "rgba(255,255,255,0.1)",
+                    bgcolor: "rgba(255,255,255,0.05)",
                   },
                 }}
               >
-                <ListItemIcon sx={{ color: "inherit", minWidth: 40 }}>
+                <ListItemIcon sx={{ color: "inherit", minWidth: 36 }}>
                   {item.icon}
                 </ListItemIcon>
-                <ListItemText primary={item.name} />
+                <ListItemText 
+                  primary={item.name} 
+                  primaryTypographyProps={{ 
+                    fontWeight: pathname === item.href ? "bold" : "normal",
+                    fontSize: "0.95rem"
+                  }} 
+                />
               </ListItemButton>
             </ListItem>
           ))}

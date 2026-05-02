@@ -15,7 +15,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: "var(--font-geist-sans), system-ui, -apple-system, sans-serif",
+    fontFamily: "var(--font-lora), serif",
   },
   components: {
     MuiButton: {

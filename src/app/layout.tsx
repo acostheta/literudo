@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import Providers from "@/components/Providers";
+import { Lora, Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
 
 export const metadata: Metadata = {
   title: "Literudo",
   description: "Blog para Agrupación Estudiantil Literudo",
 };
-
-import Providers from "@/components/Providers";
 
 export default function RootLayout({
   children,
@@ -14,8 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es">
-      <body>
+    <html lang="es" className={`${inter.variable} ${lora.variable}`}>
+      <body className={inter.className}>
         <Providers>
           {children}
         </Providers>
