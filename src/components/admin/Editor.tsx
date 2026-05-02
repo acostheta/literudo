@@ -21,6 +21,7 @@ import {
   Typography,
   Menu,
   MenuItem,
+  Button,
 } from "@mui/material";
 import {
   FormatBold,
@@ -65,130 +66,168 @@ const MenuBar = ({ editor }: { editor: any }) => {
         display: "flex",
         flexWrap: "wrap",
         alignItems: "center",
-        p: 0.5,
-        borderBottom: "1px solid #eee",
+        px: 2,
+        py: 1,
+        borderBottom: "1px solid #f0f0f0",
         position: "sticky",
         top: 0,
         zIndex: 10,
-        bgcolor: "#1a1a1a", // Toolbar oscura como en la captura
-        color: "white",
+        bgcolor: "rgba(255, 255, 255, 0.8)",
+        backdropFilter: "blur(10px)",
         borderRadius: 0,
         gap: 0.5,
       }}
     >
+      {/* Marca Discreta */}
+      <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
+        <Typography sx={{ 
+          fontSize: '0.65rem', 
+          fontWeight: 900, 
+          letterSpacing: 2, 
+          color: 'primary.main',
+          textTransform: 'uppercase',
+          border: '1.5px solid',
+          borderColor: 'primary.main',
+          px: 1,
+          py: 0.2,
+          borderRadius: 0.5
+        }}>
+          Literudo
+        </Typography>
+      </Box>
+
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mr: 1, opacity: 0.5 }} />
+
       {/* Historial */}
-      <Stack direction="row" spacing={0.5}>
-        <IconButton size="small" onClick={() => editor.chain().focus().undo().run()} sx={{ color: 'white', opacity: 0.7 }}>
-          <Undo fontSize="small" />
-        </IconButton>
-        <IconButton size="small" onClick={() => editor.chain().focus().redo().run()} sx={{ color: 'white', opacity: 0.7 }}>
-          <Redo fontSize="small" />
-        </IconButton>
+      <Stack direction="row" spacing={0.2}>
+        <Tooltip title="Deshacer (Ctrl+Z)">
+          <IconButton size="small" onClick={() => editor.chain().focus().undo().run()} sx={{ color: '#666' }}>
+            <Undo sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Rehacer (Ctrl+Y)">
+          <IconButton size="small" onClick={() => editor.chain().focus().redo().run()} sx={{ color: '#666' }}>
+            <Redo sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Tooltip>
       </Stack>
 
-      <Divider orientation="vertical" flexItem sx={{ bgcolor: "rgba(255,255,255,0.1)", mx: 1 }} />
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5 }} />
 
       {/* Títulos */}
       <IconButton 
         size="small" 
         onClick={(e) => setAnchorElHeading(e.currentTarget)}
-        sx={{ color: editor.isActive('heading') ? 'primary.light' : 'white', borderRadius: 1, px: 1 }}
+        sx={{ 
+          color: editor.isActive('heading') ? 'primary.main' : '#444', 
+          borderRadius: 1, 
+          px: 1.5,
+          bgcolor: editor.isActive('heading') ? 'rgba(var(--mui-palette-primary-mainChannel), 0.08)' : 'transparent',
+          '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+        }}
       >
-        <Typography variant="caption" sx={{ fontWeight: 'bold', mr: 0.5 }}>
-          {editor.isActive('heading', { level: 1 }) ? 'H1' : editor.isActive('heading', { level: 2 }) ? 'H2' : 'Texto'}
+        <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, mr: 0.5 }}>
+          {editor.isActive('heading', { level: 1 }) ? 'Título Principal' : editor.isActive('heading', { level: 2 }) ? 'Subtítulo' : 'Cuerpo'}
         </Typography>
-        <KeyboardArrowDown fontSize="inherit" />
+        <KeyboardArrowDown sx={{ fontSize: 14 }} />
       </IconButton>
       <Menu
         anchorEl={anchorElHeading}
         open={Boolean(anchorElHeading)}
         onClose={() => setAnchorElHeading(null)}
+        slotProps={{ paper: { sx: { borderRadius: 0, boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid #eee' } } }}
       >
-        <MenuItem onClick={() => { editor.chain().focus().setParagraph().run(); setAnchorElHeading(null); }}>Párrafo</MenuItem>
-        <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 1 }).run(); setAnchorElHeading(null); }}>Título 1 (H1)</MenuItem>
-        <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 2 }).run(); setAnchorElHeading(null); }}>Título 2 (H2)</MenuItem>
-        <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 3 }).run(); setAnchorElHeading(null); }}>Título 3 (H3)</MenuItem>
+        <MenuItem onClick={() => { editor.chain().focus().setParagraph().run(); setAnchorElHeading(null); }}>
+          <Typography sx={{ fontSize: '0.9rem' }}>Texto Normal</Typography>
+        </MenuItem>
+        <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 1 }).run(); setAnchorElHeading(null); }}>
+          <Typography sx={{ fontSize: '1.1rem', fontWeight: 800 }}>Título de Obra (H1)</Typography>
+        </MenuItem>
+        <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 2 }).run(); setAnchorElHeading(null); }}>
+          <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>Sección (H2)</Typography>
+        </MenuItem>
+        <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 3 }).run(); setAnchorElHeading(null); }}>
+          <Typography sx={{ fontSize: '0.9rem', fontWeight: 600 }}>Subsección (H3)</Typography>
+        </MenuItem>
       </Menu>
 
-      <Divider orientation="vertical" flexItem sx={{ bgcolor: "rgba(255,255,255,0.1)", mx: 1 }} />
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5 }} />
 
-      {/* Listas y Bloques */}
-      <Stack direction="row" spacing={0.5}>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          sx={{ color: editor.isActive('bulletList') ? 'primary.light' : 'white' }}
-        >
-          <FormatListBulleted fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          sx={{ color: editor.isActive('orderedList') ? 'primary.light' : 'white' }}
-        >
-          <FormatListNumbered fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          sx={{ color: editor.isActive('blockquote') ? 'primary.light' : 'white' }}
-        >
-          <FormatQuote fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          sx={{ color: editor.isActive('codeBlock') ? 'primary.light' : 'white' }}
-        >
-          <Code fontSize="small" />
-        </IconButton>
+      {/* Formato de Texto Principal */}
+      <Stack direction="row" spacing={0.2}>
+        {[
+          { icon: <FormatBold />, action: () => editor.chain().focus().toggleBold().run(), active: 'bold', label: 'Negrita' },
+          { icon: <FormatItalic />, action: () => editor.chain().focus().toggleItalic().run(), active: 'italic', label: 'Cursiva' },
+          { icon: <FormatUnderlined />, action: () => editor.chain().focus().toggleUnderline().run(), active: 'underline', label: 'Subrayado' },
+          { icon: <StrikethroughS />, action: () => editor.chain().focus().toggleStrike().run(), active: 'strike', label: 'Tachado' },
+        ].map((btn, i) => (
+          <Tooltip key={i} title={btn.label}>
+            <IconButton 
+              size="small" 
+              onClick={btn.action}
+              sx={{ 
+                color: editor.isActive(btn.active) ? 'primary.main' : '#444',
+                bgcolor: editor.isActive(btn.active) ? 'rgba(var(--mui-palette-primary-mainChannel), 0.08)' : 'transparent',
+                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+              }}
+            >
+              {btn.icon}
+            </IconButton>
+          </Tooltip>
+        ))}
       </Stack>
 
-      <Divider orientation="vertical" flexItem sx={{ bgcolor: "rgba(255,255,255,0.1)", mx: 1 }} />
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5 }} />
 
-      {/* Formato de Texto */}
-      <Stack direction="row" spacing={0.5}>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          sx={{ color: editor.isActive('bold') ? 'primary.light' : 'white' }}
-        >
-          <FormatBold fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          sx={{ color: editor.isActive('italic') ? 'primary.light' : 'white' }}
-        >
-          <FormatItalic fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          sx={{ color: editor.isActive('strike') ? 'primary.light' : 'white' }}
-        >
-          <StrikethroughS fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          sx={{ color: editor.isActive('code') ? 'primary.light' : 'white' }}
-        >
-          <CodeOff fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          sx={{ color: editor.isActive('underline') ? 'primary.light' : 'white' }}
-        >
-          <FormatUnderlined fontSize="small" />
-        </IconButton>
+      {/* Bloques y Listas */}
+      <Stack direction="row" spacing={0.2}>
+        <Tooltip title="Lista con Viñetas">
+          <IconButton size="small" onClick={() => editor.chain().focus().toggleBulletList().run()} sx={{ color: editor.isActive('bulletList') ? 'primary.main' : '#444' }}>
+            <FormatListBulleted sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Cita Literaria">
+          <IconButton size="small" onClick={() => editor.chain().focus().toggleBlockquote().run()} sx={{ color: editor.isActive('blockquote') ? 'primary.main' : '#444' }}>
+            <FormatQuote sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Bloque de Código">
+          <IconButton size="small" onClick={() => editor.chain().focus().toggleCodeBlock().run()} sx={{ color: editor.isActive('codeBlock') ? 'primary.main' : '#444' }}>
+            <Code sx={{ fontSize: 20 }} />
+          </IconButton>
+        </Tooltip>
+      </Stack>
+
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5 }} />
+
+      {/* Alineación */}
+      <Stack direction="row" spacing={0.2}>
+        {[
+          { icon: <FormatAlignLeft />, action: () => editor.chain().focus().setTextAlign('left').run(), align: 'left' },
+          { icon: <FormatAlignCenter />, action: () => editor.chain().focus().setTextAlign('center').run(), align: 'center' },
+          { icon: <FormatAlignJustify />, action: () => editor.chain().focus().setTextAlign('justify').run(), align: 'justify' },
+        ].map((btn, i) => (
+          <IconButton 
+            key={i}
+            size="small" 
+            onClick={btn.action}
+            sx={{ color: editor.isActive({ textAlign: btn.align }) ? 'primary.main' : '#444' }}
+          >
+            {btn.icon}
+          </IconButton>
+        ))}
+      </Stack>
+
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5 }} />
+
+      {/* Extras */}
+      <Stack direction="row" spacing={0.2}>
         <IconButton 
           size="small" 
           onClick={() => editor.chain().focus().toggleHighlight().run()}
-          sx={{ color: editor.isActive('highlight') ? 'primary.light' : 'white' }}
+          sx={{ color: editor.isActive('highlight') ? 'primary.main' : '#444' }}
         >
-          <HighlightIcon fontSize="small" />
+          <HighlightIcon sx={{ fontSize: 18 }} />
         </IconButton>
         <IconButton 
           size="small" 
@@ -196,73 +235,27 @@ const MenuBar = ({ editor }: { editor: any }) => {
             const url = window.prompt('URL del enlace:');
             if (url) editor.chain().focus().setLink({ href: url }).run();
           }}
-          sx={{ color: editor.isActive('link') ? 'primary.light' : 'white' }}
+          sx={{ color: editor.isActive('link') ? 'primary.main' : '#444' }}
         >
-          <LinkIcon fontSize="small" />
+          <LinkIcon sx={{ fontSize: 18 }} />
         </IconButton>
       </Stack>
 
-      <Divider orientation="vertical" flexItem sx={{ bgcolor: "rgba(255,255,255,0.1)", mx: 1 }} />
-
-      {/* Sub/Super script */}
-      <Stack direction="row" spacing={0.5}>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleSuperscript().run()}
-          sx={{ color: editor.isActive('superscript') ? 'primary.light' : 'white' }}
+      <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Button
+          size="small"
+          startIcon={<AddPhotoAlternate sx={{ fontSize: 18 }} />}
+          sx={{ 
+            color: 'primary.main', 
+            fontSize: '0.7rem', 
+            fontWeight: 700,
+            textTransform: 'none',
+            '&:hover': { bgcolor: 'rgba(var(--mui-palette-primary-mainChannel), 0.04)' }
+          }}
         >
-          <SuperscriptIcon fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().toggleSubscript().run()}
-          sx={{ color: editor.isActive('subscript') ? 'primary.light' : 'white' }}
-        >
-          <SubscriptIcon fontSize="small" />
-        </IconButton>
-      </Stack>
-
-      <Divider orientation="vertical" flexItem sx={{ bgcolor: "rgba(255,255,255,0.1)", mx: 1 }} />
-
-      {/* Alineación */}
-      <Stack direction="row" spacing={0.5}>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().setTextAlign('left').run()}
-          sx={{ color: editor.isActive({ textAlign: 'left' }) ? 'primary.light' : 'white' }}
-        >
-          <FormatAlignLeft fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().setTextAlign('center').run()}
-          sx={{ color: editor.isActive({ textAlign: 'center' }) ? 'primary.light' : 'white' }}
-        >
-          <FormatAlignCenter fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().setTextAlign('right').run()}
-          sx={{ color: editor.isActive({ textAlign: 'right' }) ? 'primary.light' : 'white' }}
-        >
-          <FormatAlignRight fontSize="small" />
-        </IconButton>
-        <IconButton 
-          size="small" 
-          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-          sx={{ color: editor.isActive({ textAlign: 'justify' }) ? 'primary.light' : 'white' }}
-        >
-          <FormatAlignJustify fontSize="small" />
-        </IconButton>
-      </Stack>
-
-      <Divider orientation="vertical" flexItem sx={{ bgcolor: "rgba(255,255,255,0.1)", mx: 1 }} />
-
-      {/* Media */}
-      <IconButton size="small" sx={{ color: 'white', ml: 'auto' }}>
-        <AddPhotoAlternate fontSize="small" />
-        <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 'bold' }}>Add</Typography>
-      </IconButton>
+          Añadir Multimedia
+        </Button>
+      </Box>
     </Paper>
   );
 };
