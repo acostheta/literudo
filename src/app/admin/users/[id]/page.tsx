@@ -19,6 +19,7 @@ import {
 } from "@mui/icons-material";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import UserDetailActions from "@/components/UserDetailActions";
 
 export default async function UserDetailPage({
   params,
@@ -60,31 +61,31 @@ export default async function UserDetailPage({
             <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
               {user.name}
             </Typography>
-            <Stack direction="row" spacing={1} justifyContent={{ xs: 'center', sm: 'flex-start' }}>
+            <Stack direction="row" spacing={1} justifyContent={{ xs: 'center', sm: 'flex-start' }} sx={{ mb: 1 }}>
               <Chip 
                 label={user.role} 
+                size="small"
                 color={user.role === "Administrador" ? "primary" : "default"} 
-                icon={<RoleIcon />}
+                icon={<RoleIcon fontSize="small" />}
               />
               <Chip 
                 label={user.status} 
+                size="small"
                 color={user.status === "activo" ? "success" : "warning"} 
                 variant="outlined"
               />
             </Stack>
+            <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+              <EmailIcon sx={{ fontSize: 16 }} /> {user.email}
+            </Typography>
+
+            <UserDetailActions user={user} />
           </Box>
         </Stack>
 
         <Divider sx={{ mb: 4 }} />
 
         <Stack spacing={4}>
-          <Box>
-            <Typography variant="overline" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <EmailIcon fontSize="small" /> Email de contacto
-            </Typography>
-            <Typography variant="h6">{user.email}</Typography>
-          </Box>
-
           <Box>
             <Typography variant="overline" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <BioIcon fontSize="small" /> Biografía / Sobre mí
@@ -96,7 +97,11 @@ export default async function UserDetailPage({
 
           <Box sx={{ p: 2, bgcolor: '#f9f9f9', borderRadius: 2 }}>
              <Typography variant="caption" color="text.secondary">
-               ID del Usuario: {user.id}
+               Miembro desde: {new Date(user.created_at).toLocaleDateString('es-ES', {
+                 day: 'numeric',
+                 month: 'long',
+                 year: 'numeric'
+               })}
              </Typography>
           </Box>
         </Stack>
