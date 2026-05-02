@@ -71,13 +71,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         variant="permanent"
         anchor="left"
       >
-        <Box sx={{ p: 2, textAlign: "center" }}>
-          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 1 }}>
-            Literudo
-          </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.7 }}>
-            Student Admin Panel
-          </Typography>
+        <Box sx={{ p: 3, textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+          <Box 
+            component="img"
+            src="/logo.png"
+            alt="Logo Literudo"
+            sx={{ width: 60, height: 60, mb: 1 }}
+          />
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 0.5, letterSpacing: 1 }}>
+              Literudo
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Admin Panel
+            </Typography>
+          </Box>
         </Box>
         <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
         <List sx={{ mt: 2, p: 0 }}>
@@ -105,11 +113,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 </ListItemIcon>
                 <ListItemText 
                   primary={
-                    <Typography variant="body2" sx={{ 
-                      fontWeight: pathname === item.href ? "bold" : "normal",
-                      fontSize: "0.95rem",
-                      fontFamily: "inherit"
-                    }}>
+                    <Typography 
+                      variant="body2" 
+                      component="span"
+                      sx={{ 
+                        fontWeight: pathname === item.href ? "bold" : "normal",
+                        fontSize: "0.95rem",
+                        fontFamily: "inherit"
+                      }}
+                    >
                       {item.name}
                     </Typography>
                   } 

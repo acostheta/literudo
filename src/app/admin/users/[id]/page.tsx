@@ -27,14 +27,36 @@ export default async function UserDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  
+  let user = null;
+  let errorMsg = null;
 
-  const { data: user, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", id)
+      .single();
+    
+    if (error) {
+      errorMsg = error.message;
+    } else {
+      user = data;
+    }
+  } catch (e: any) {
+    errorMsg = e.message;
+  }
 
-  if (error || !user) {
+  if (errorMsg) {
+    return (
+      <Container sx={{ mt: 5 }}>
+        <Typography color="error">Error cargando usuario: {errorMsg}</Typography>
+        <Button component={Link} href="/admin/users">Volver</Button>
+      </Container>
+    );
+  }
+
+  if (!user) {
     notFound();
   }
 
@@ -50,7 +72,7 @@ export default async function UserDetailPage({
       </Button>
 
       <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: 4 }}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={4} alignItems="center" sx={{ mb: 5 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={4} sx={{ mb: 5, alignItems: 'center' }}>
           <Avatar
             src={user.avatar_url}
             sx={{ width: 150, height: 150, border: '4px solid #f0f0f0' }}
@@ -61,7 +83,7 @@ export default async function UserDetailPage({
             <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
               {user.name}
             </Typography>
-            <Stack direction="row" spacing={1} justifyContent={{ xs: 'center', sm: 'flex-start' }} sx={{ mb: 1 }}>
+            <Stack direction="row" spacing={1} sx={{ mb: 1, alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-start' } }}>
               <Chip 
                 label={user.role} 
                 size="small"

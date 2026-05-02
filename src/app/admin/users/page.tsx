@@ -84,8 +84,8 @@ export default function UsersPage() {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: "bold", color: "primary.main" }}>
+      <Stack direction="row" sx={{ mb: 4, alignItems: 'center' }}>
+        <Typography variant="h4" sx={{ fontWeight: "bold", color: "primary.main", flexGrow: 1 }}>
           Gestión de Usuarios
         </Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddClick}>
@@ -101,13 +101,13 @@ export default function UsersPage() {
       />
 
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }}>
+        <Table sx={{ minWidth: 650, tableLayout: 'fixed' }}>
           <TableHead sx={{ backgroundColor: "grey.100" }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold" }}>Usuario</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Rol</TableCell>
-              <TableCell sx={{ fontWeight: "bold" }}>Estatus</TableCell>
-              <TableCell align="right" sx={{ fontWeight: "bold" }}>Acciones</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "40%", py: 2 }}>Usuario</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", width: "20%", py: 2 }}>Rol</TableCell>
+              <TableCell align="center" sx={{ fontWeight: "bold", width: "20%", py: 2 }}>Estatus</TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold", width: "20%", py: 2 }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -116,19 +116,23 @@ export default function UsersPage() {
             ) : (
               users.map((user) => (
                 <TableRow key={user.id} hover onClick={() => router.push(`/admin/users/${user.id}`)} sx={{ cursor: 'pointer' }}>
-                  <TableCell>
+                  <TableCell sx={{ py: 2, width: "40%", overflow: 'hidden' }}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={user.avatar_url} sx={{ border: '1px solid #eee' }}>{user.name.charAt(0)}</Avatar>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{user.name}</Typography>
-                        <Typography variant="caption" color="text.secondary">{user.email}</Typography>
+                      <Avatar src={user.avatar_url} sx={{ border: '1px solid #eee', flexShrink: 0 }}>{user.name.charAt(0)}</Avatar>
+                      <Box sx={{ overflow: 'hidden' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', lineHeight: 1.2, noWrap: true }}>{user.name}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1, display: 'block', noWrap: true }}>{user.email}</Typography>
                       </Box>
                     </Stack>
                   </TableCell>
-                  <TableCell><Chip label={user.role} size="small" color={user.role === "Administrador" ? "primary" : "default"} /></TableCell>
-                  <TableCell><Chip label={user.status} size="small" color={user.status === "activo" ? "success" : "warning"} variant="outlined" /></TableCell>
-                  <TableCell align="right">
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                  <TableCell align="center" sx={{ py: 2, width: "20%" }}>
+                    <Chip label={user.role} size="small" color={user.role === "Administrador" ? "primary" : "default"} />
+                  </TableCell>
+                  <TableCell align="center" sx={{ py: 2, width: "20%" }}>
+                    <Chip label={user.status} size="small" color={user.status === "activo" ? "success" : "warning"} variant="outlined" />
+                  </TableCell>
+                  <TableCell align="right" sx={{ py: 2, width: "20%" }}>
+                    <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
                       <IconButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); handleEditClick(user); }}>
                         <EditIcon fontSize="small" />
                       </IconButton>
