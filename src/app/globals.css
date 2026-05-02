@@ -10,3 +10,67 @@ body {
   color: #333;
   background: #fafafa;
 }
+
+.admin-layout {
+  min-height: 100vh;
+}
+
+.topbar {
+  background: #1a1a2e;
+  color: white;
+  padding: 1rem 1.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  z-index: 100;
+}
+
+.topbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.admin-container {
+  display: flex;
+  padding-top: 60px;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e5e5e5;
+  padding: 1.5rem 0;
+  position: fixed;
+  top: 60px;
+  bottom: 0;
+  left: 0;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: #666;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.nav-link:hover {
+  background: #f5f5f5;
+  color: #1a1a2e;
+}
+
+.nav-link.active {
+  background: #f0f0f0;
+  color: #1a1a2e;
+  font-weight: 500;
+  border-right: 3px solid #1a1a2e;
+}
+
+.content {
+  flex: 1;
+  margin-left: 240px;
+  padding: 2rem;
+}
