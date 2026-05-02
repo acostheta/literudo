@@ -1,160 +1,139 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import {
   Box,
   Button,
-  Container,
-  Paper,
+  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
-  Stack,
+  Paper,
   Chip,
   IconButton,
+  Stack,
   CircularProgress,
-  Avatar,
 } from "@mui/material";
 import {
   Add as AddIcon,
-  Delete as DeleteIcon,
   Edit as EditIcon,
-  Article as PostIcon,
+  Delete as DeleteIcon,
+  Visibility as ViewIcon,
 } from "@mui/icons-material";
-// import PostFormModal from "@/components/PostFormModal"; // We will create this next
 
 interface Post {
   id: string;
   title: string;
   slug: string;
   status: string;
-  category: string;
   created_at: string;
-  cover_url?: string;
-  author_id: string;
-  profiles?: {
-    name: string;
-  };
+  profiles: { name: string } | null;
 }
 
 export default function PostsPage() {
-  const supabase = createClient();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  const fetchPosts = async () => {
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*, profiles(name)")
+      .order("created_at", { ascending: false });
+
+    if (data) setPosts(data);
+    setLoading(false);
+  };
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  const fetchPosts = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("posts")
-      .select(`
-        *,
-        profiles (
-          name
-        )
-      `)
-      .order("created_at", { ascending: false });
-
-    if (error) console.error("Error:", error);
-    else setPosts(data || []);
-    setLoading(false);
-  };
-
-  const deletePost = async (id: string) => {
-    if (confirm("¿Estás seguro de eliminar este post?")) {
-      const { error } = await supabase.from("posts").delete().eq("id", id);
-      if (error) alert(error.message);
-      else fetchPosts();
+  const handleDelete = async (id: string) => {
+    if (window.confirm("¿Estás seguro de que quieres eliminar este artículo?")) {
+      await supabase.from("posts").delete().eq("id", id);
+      fetchPosts();
     }
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Stack direction="row" sx={{ mb: 4, alignItems: 'center' }}>
-        <Typography variant="h4" sx={{ fontWeight: "bold", color: "primary.main", flexGrow: 1 }}>
-          Artículos del Blog
-        </Typography>
-        <Button 
-          variant="contained" 
-          startIcon={<AddIcon />} 
-          onClick={() => alert("Próximamente: Modal de creación")}
+    <Box>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
+            Gestión de Artículos
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Escribe, edita y publica historias para la comunidad Literudo.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          component={Link}
+          href="/admin/posts/new"
+          sx={{ borderRadius: 0, px: 3 }}
         >
           Nuevo Artículo
         </Button>
       </Stack>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650, tableLayout: 'fixed' }}>
-          <TableHead sx={{ backgroundColor: "grey.100" }}>
+      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0, border: "1px solid #eee" }}>
+        <Table sx={{ tableLayout: 'fixed' }}>
+          <TableHead sx={{ bgcolor: "#f9f9f9" }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "45%", py: 2 }}>Artículo</TableCell>
-              <TableCell align="center" sx={{ fontWeight: "bold", width: "15%", py: 2 }}>Categoría</TableCell>
-              <TableCell align="center" sx={{ fontWeight: "bold", width: "15%", py: 2 }}>Estatus</TableCell>
-              <TableCell align="center" sx={{ fontWeight: "bold", width: "15%", py: 2 }}>Autor</TableCell>
-              <TableCell align="right" sx={{ fontWeight: "bold", width: "10%", py: 2 }}>Acciones</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "40%" }}>Título</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "20%" }}>Autor</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Estado</TableCell>
+              <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Fecha</TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold", width: "10%" }}>Acciones</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={5} align="center" sx={{ py: 5 }}><CircularProgress /></TableCell></TableRow>
-            ) : posts.length === 0 ? (
-              <TableRow><TableCell colSpan={5} align="center" sx={{ py: 5 }}>No hay artículos todavía.</TableCell></TableRow>
+            {posts.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                  <Typography color="text.secondary">No hay artículos escritos todavía.</Typography>
+                </TableCell>
+              </TableRow>
             ) : (
               posts.map((post) => (
                 <TableRow key={post.id} hover>
-                  <TableCell sx={{ py: 2, width: "45%" }}>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Box 
-                        sx={{ 
-                          width: 50, 
-                          height: 50, 
-                          bgcolor: 'grey.200', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center',
-                          borderRadius: 1,
-                          overflow: 'hidden'
-                        }}
-                      >
-                        {post.cover_url ? (
-                          <img src={post.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          <PostIcon color="action" />
-                        )}
-                      </Box>
-                      <Box sx={{ overflow: 'hidden' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>{post.title}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1 }}>{post.slug}</Typography>
-                      </Box>
-                    </Stack>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{post.title}</Typography>
+                    <Typography variant="caption" color="text.secondary">/{post.slug}</Typography>
                   </TableCell>
-                  <TableCell align="center" sx={{ py: 2, width: "15%" }}>
-                    <Chip label={post.category} size="small" variant="outlined" />
-                  </TableCell>
-                  <TableCell align="center" sx={{ py: 2, width: "15%" }}>
-                    <Chip 
-                      label={post.status} 
-                      size="small" 
-                      color={post.status === "publicado" ? "success" : "warning"} 
+                  <TableCell>{post.profiles?.name || "Desconocido"}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={post.status === "publicado" ? "Publicado" : "Borrador"}
+                      size="small"
+                      color={post.status === "publicado" ? "success" : "default"}
+                      sx={{ borderRadius: 0, fontWeight: "bold" }}
                     />
                   </TableCell>
-                  <TableCell align="center" sx={{ py: 2, width: "15%" }}>
-                    <Typography variant="caption">{post.profiles?.name || "Anónimo"}</Typography>
+                  <TableCell>
+                    {new Date(post.created_at).toLocaleDateString()}
                   </TableCell>
-                  <TableCell align="right" sx={{ py: 2, width: "10%" }}>
-                    <Stack direction="row" spacing={0.5} sx={{ justifyContent: "flex-end" }}>
-                      <IconButton size="small" color="primary">
+                  <TableCell align="right">
+                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                      <IconButton size="small" component={Link} href={`/admin/posts/edit/${post.id}`}>
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" color="error" onClick={() => deletePost(post.id)}>
+                      <IconButton size="small" color="error" onClick={() => handleDelete(post.id)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Stack>
@@ -165,6 +144,6 @@ export default function PostsPage() {
           </TableBody>
         </Table>
       </TableContainer>
-    </Container>
+    </Box>
   );
 }
