@@ -152,20 +152,39 @@ export default function Editor({ content, onChange }: EditorProps) {
         sx={{
           '& .literudo-editor': {
             fontFamily: '"Lora", serif', // Fuente literaria
+            fontSize: '1.2rem',
             lineHeight: 1.8,
-            color: '#333',
-            '& h1': { fontSize: '2.5rem', fontWeight: 700, mb: 4 },
-            '& h2': { fontSize: '1.8rem', fontWeight: 600, mb: 3 },
-            '& p': { mb: 2 },
+            color: '#222',
+            '& h1': { fontSize: '2.5rem', fontWeight: 800, mb: 4, letterSpacing: -0.5 },
+            '& h2': { fontSize: '1.8rem', fontWeight: 700, mb: 3, mt: 5, letterSpacing: -0.3 },
+            '& p': { mb: 3 },
             '& blockquote': {
-              borderLeft: '4px solid #eee',
-              pl: 3,
+              borderLeft: '3px solid',
+              borderColor: 'primary.main',
+              pl: 4,
+              py: 1,
+              mx: 0,
               fontStyle: 'italic',
-              color: '#666',
-              my: 4
+              fontSize: '1.4rem',
+              color: '#555',
+              my: 6,
+              position: 'relative',
             },
-            '& ul, & ol': { pl: 4, mb: 3 },
-            '& a': { color: 'primary.main', textDecoration: 'underline' },
+            '& ul, & ol': { pl: 4, mb: 4 },
+            '& li': { mb: 1.5 },
+            '& a': { 
+              color: 'primary.main', 
+              textDecoration: 'underline',
+              textUnderlineOffset: '4px',
+              '&:hover': { color: 'primary.dark' }
+            },
+            '& .is-editor-empty:first-of-type::before': {
+              content: 'attr(data-placeholder)',
+              float: 'left',
+              color: '#adb5bd',
+              pointerEvents: 'none',
+              height: 0,
+            },
           }
         }}
       >

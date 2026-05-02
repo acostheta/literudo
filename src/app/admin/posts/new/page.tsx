@@ -74,95 +74,164 @@ export default function NewPostPage() {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mb: 4 }}>
-        <Breadcrumbs sx={{ mb: 2 }}>
-          <MuiLink component={Link} href="/admin/posts" underline="hover" color="inherit">
-            Artículos
-          </MuiLink>
-          <Typography color="text.primary">Nuevo Artículo</Typography>
-        </Breadcrumbs>
-        
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-            Escribir Artículo
-          </Typography>
-          <Stack direction="row" spacing={2}>
-            <Button
-              variant="outlined"
-              startIcon={<BackIcon />}
-              onClick={() => router.back()}
-              sx={{ borderRadius: 0 }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<SaveIcon />}
-              onClick={handleSave}
-              disabled={loading}
-              sx={{ borderRadius: 0, px: 4 }}
-            >
-              {loading ? "Guardando..." : "Guardar Borrador"}
-            </Button>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: '#fafafa', // Gris muy claro para resaltar el papel
+      py: 6 
+    }}>
+      <Container maxWidth="md">
+        {/* Cabecera Minimalista */}
+        <Box sx={{ mb: 6 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+            <Box>
+              <Breadcrumbs sx={{ mb: 1, '& .MuiBreadcrumbs-li': { fontSize: '0.8rem', letterSpacing: 1, textTransform: 'uppercase', opacity: 0.6 } }}>
+                <MuiLink component={Link} href="/admin/posts" underline="hover" color="inherit">
+                  Artículos
+                </MuiLink>
+                <Typography color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>Nueva Obra</Typography>
+              </Breadcrumbs>
+              <Typography variant="h3" sx={{ 
+                fontFamily: '"Lora", serif', 
+                fontWeight: 700, 
+                color: '#1a1a1a',
+                letterSpacing: -0.5
+              }}>
+                Crear contenido
+              </Typography>
+            </Box>
+            
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant="text"
+                onClick={() => router.back()}
+                sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' } }}
+              >
+                Cerrar
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
+                onClick={handleSave}
+                disabled={loading}
+                sx={{ 
+                  borderRadius: 0, 
+                  px: 4, 
+                  py: 1,
+                  bgcolor: '#1a1a1a',
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: '#333', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }
+                }}
+              >
+                {loading ? "Guardando..." : "Publicar"}
+              </Button>
+            </Stack>
           </Stack>
-        </Stack>
-      </Box>
+        </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 0 }}>{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 4, borderRadius: 0, border: '1px solid #ffcdd2', bgcolor: '#fff9f9' }}>{error}</Alert>}
 
-      <Stack spacing={3}>
-        <Paper elevation={0} sx={{ p: 4, borderRadius: 0, border: "1px solid #eee" }}>
-          <Stack spacing={3}>
+        {/* El Papel (Documento) */}
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            p: { xs: 4, md: 10 }, 
+            borderRadius: 0, 
+            bgcolor: 'white',
+            border: '1px solid #e0e0e0',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.03)',
+            position: 'relative',
+            '&::before': { // Efecto de borde sutil para parecer papel
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              bgcolor: 'primary.main',
+              opacity: 0.8
+            }
+          }}
+        >
+          <Stack spacing={4}>
+            {/* Título Principal */}
             <TextField
               fullWidth
               variant="standard"
-              placeholder="Título del Artículo"
+              placeholder="Escribe el título aquí..."
               value={title}
               onChange={handleTitleChange}
               InputProps={{
                 sx: { 
-                  fontSize: '2.5rem', 
-                  fontWeight: 700,
+                  fontSize: { xs: '2.5rem', md: '3.5rem' }, 
+                  fontWeight: 800,
                   fontFamily: '"Lora", serif',
-                  '&:before, &:after': { display: 'none' }
+                  lineHeight: 1.2,
+                  color: '#1a1a1a',
+                  '&:before, &:after': { display: 'none' },
+                  '& input::placeholder': { opacity: 0.2, fontStyle: 'italic' }
                 }
               }}
             />
             
-            <TextField
-              fullWidth
-              variant="standard"
-              placeholder="URL amigable (slug)"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              InputProps={{
-                startAdornment: <Typography sx={{ mr: 1, opacity: 0.5 }}>literudo.com/blog/</Typography>,
-                sx: { fontSize: '0.9rem', color: 'text.secondary', '&:before, &:after': { display: 'none' } }
-              }}
-            />
+            {/* Slug y Meta info */}
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box sx={{ 
+                px: 1.5, 
+                py: 0.5, 
+                bgcolor: '#f5f5f5', 
+                borderRadius: 1, 
+                display: 'flex', 
+                alignItems: 'center',
+                gap: 1
+              }}>
+                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>
+                  Slug:
+                </Typography>
+                <Typography sx={{ fontSize: '0.85rem', color: 'primary.main', fontStyle: 'italic' }}>
+                  literudo.com/blog/{slug || '...'}
+                </Typography>
+              </Box>
+            </Stack>
 
-            <Divider />
+            <Divider sx={{ my: 2, opacity: 0.5 }} />
 
+            {/* Resumen / Bajada de título */}
             <TextField
               fullWidth
               multiline
               rows={2}
               variant="standard"
-              placeholder="Resumen corto (opcional)"
+              placeholder="Añade un breve resumen que atrape al lector..."
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               InputProps={{
-                sx: { fontSize: '1.1rem', fontStyle: 'italic', '&:before, &:after': { display: 'none' } }
+                sx: { 
+                  fontSize: '1.25rem', 
+                  fontFamily: '"Lora", serif',
+                  fontStyle: 'italic',
+                  lineHeight: 1.6,
+                  color: '#666',
+                  '&:before, &:after': { display: 'none' },
+                  '& textarea::placeholder': { opacity: 0.4 }
+                }
               }}
             />
+
+            <Box sx={{ py: 4 }}>
+              <Editor onChange={setContent} />
+            </Box>
           </Stack>
         </Paper>
 
-        <Paper elevation={0} sx={{ p: 4, borderRadius: 0, border: "1px solid #eee", minHeight: 600 }}>
-          <Editor onChange={setContent} />
-        </Paper>
-      </Stack>
-    </Container>
+        {/* Footer info */}
+        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', opacity: 0.3 }}>
+          <Typography variant="caption" sx={{ letterSpacing: 2, textTransform: 'uppercase' }}>
+            Literudo Editorial Engine
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
   );
 }
+
+import { CircularProgress } from "@mui/material";
