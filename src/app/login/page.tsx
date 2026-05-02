@@ -109,7 +109,7 @@ export default function LoginPage() {
             boxShadow: "20px 20px 60px #d9d9d7, -20px -20px 60px #ffffff",
           }}
         >
-          <Stack spacing={4} alignItems="center" sx={{ width: "100%" }}>
+          <Stack spacing={4} sx={{ width: "100%", alignItems: "center" }}>
             {mode !== "login" && (
               <IconButton 
                 onClick={() => setMode("login")} 
@@ -214,7 +214,7 @@ export default function LoginPage() {
                 </Button>
 
                 {mode === "login" && (
-                  <Stack spacing={1} alignItems="center">
+                  <Stack spacing={1} sx={{ alignItems: "center" }}>
                     <MuiLink 
                       component="button" 
                       type="button"

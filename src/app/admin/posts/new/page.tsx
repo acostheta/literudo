@@ -76,38 +76,43 @@ export default function NewPostPage() {
   return (
     <Box sx={{ 
       minHeight: '100vh', 
-      bgcolor: '#fafafa', // Gris muy claro para resaltar el papel
-      py: 6 
+      bgcolor: '#fcfcfb', // Un blanco roto más cálido
+      py: 4 
     }}>
       <Container maxWidth="md">
         {/* Cabecera Minimalista */}
-        <Box sx={{ mb: 6 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+        <Box sx={{ mb: 8 }}>
+          <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
             <Box>
-              <Breadcrumbs sx={{ mb: 1, '& .MuiBreadcrumbs-li': { fontSize: '0.8rem', letterSpacing: 1, textTransform: 'uppercase', opacity: 0.6 } }}>
+              <Breadcrumbs sx={{ mb: 1.5, '& .MuiBreadcrumbs-li': { fontSize: '0.7rem', letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.5 } }}>
                 <MuiLink component={Link} href="/admin/posts" underline="hover" color="inherit">
                   Artículos
                 </MuiLink>
-                <Typography color="text.primary" sx={{ fontSize: '0.8rem', fontWeight: 600 }}>Nueva Obra</Typography>
+                <Typography color="text.primary" sx={{ fontSize: '0.7rem', fontWeight: 700 }}>Nueva Obra</Typography>
               </Breadcrumbs>
               <Typography variant="h3" sx={{ 
                 fontFamily: '"Lora", serif', 
-                fontWeight: 700, 
+                fontWeight: 800, 
                 color: '#1a1a1a',
-                letterSpacing: -0.5
+                letterSpacing: -1
               }}>
                 Crear contenido
               </Typography>
             </Box>
             
-            <Stack direction="row" spacing={2}>
-              <Button
-                variant="text"
+            <Stack direction="row" spacing={3} sx={{ alignItems: "center" }}>
+              <MuiLink 
+                component="button"
                 onClick={() => router.back()}
-                sx={{ color: 'text.secondary', '&:hover': { bgcolor: 'rgba(0,0,0,0.05)' } }}
+                sx={{ 
+                  color: 'text.secondary', 
+                  fontSize: '0.9rem', 
+                  textDecoration: 'none',
+                  '&:hover': { color: 'error.main' } 
+                }}
               >
                 Cerrar
-              </Button>
+              </MuiLink>
               <Button
                 variant="contained"
                 startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
@@ -116,10 +121,12 @@ export default function NewPostPage() {
                 sx={{ 
                   borderRadius: 0, 
                   px: 4, 
-                  py: 1,
+                  py: 1.2,
                   bgcolor: '#1a1a1a',
                   boxShadow: 'none',
-                  '&:hover': { bgcolor: '#333', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  '&:hover': { bgcolor: '#000', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }
                 }}
               >
                 {loading ? "Guardando..." : "Publicar"}
@@ -137,22 +144,12 @@ export default function NewPostPage() {
             p: { xs: 4, md: 10 }, 
             borderRadius: 0, 
             bgcolor: 'white',
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.03)',
+            border: '1px solid #eee',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.02)',
             position: 'relative',
-            '&::before': { // Efecto de borde sutil para parecer papel
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              bgcolor: 'primary.main',
-              opacity: 0.8
-            }
           }}
         >
-          <Stack spacing={4}>
+          <Stack spacing={2}>
             {/* Título Principal */}
             <TextField
               fullWidth
@@ -160,40 +157,33 @@ export default function NewPostPage() {
               placeholder="Escribe el título aquí..."
               value={title}
               onChange={handleTitleChange}
-              InputProps={{
-                sx: { 
-                  fontSize: { xs: '2.5rem', md: '3.5rem' }, 
-                  fontWeight: 800,
-                  fontFamily: '"Lora", serif',
-                  lineHeight: 1.2,
-                  color: '#1a1a1a',
-                  '&:before, &:after': { display: 'none' },
-                  '& input::placeholder': { opacity: 0.2, fontStyle: 'italic' }
+              autoFocus
+              slotProps={{
+                input: {
+                  disableUnderline: true,
+                  sx: { 
+                    fontSize: { xs: '2.5rem', md: '3.5rem' }, 
+                    fontWeight: 800,
+                    fontFamily: '"Lora", serif',
+                    lineHeight: 1.1,
+                    color: '#1a1a1a',
+                    '& input::placeholder': { opacity: 0.15, fontStyle: 'normal' }
+                  }
                 }
               }}
             />
             
             {/* Slug y Meta info */}
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Box sx={{ 
-                px: 1.5, 
-                py: 0.5, 
-                bgcolor: '#f5f5f5', 
-                borderRadius: 1, 
-                display: 'flex', 
-                alignItems: 'center',
-                gap: 1
-              }}>
-                <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 1 }}>
-                  Slug:
-                </Typography>
-                <Typography sx={{ fontSize: '0.85rem', color: 'primary.main', fontStyle: 'italic' }}>
-                  literudo.com/blog/{slug || '...'}
-                </Typography>
-              </Box>
-            </Stack>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 4 }}>
+              <Typography sx={{ fontSize: '0.65rem', fontWeight: 900, color: '#ccc', textTransform: 'uppercase', letterSpacing: 2 }}>
+                Enlace:
+              </Typography>
+              <Typography sx={{ fontSize: '0.8rem', color: 'primary.main', opacity: 0.7, fontStyle: 'italic' }}>
+                literudo.com/blog/{slug || '...'}
+              </Typography>
+            </Box>
 
-            <Divider sx={{ my: 2, opacity: 0.5 }} />
+            <Divider sx={{ my: 4, borderColor: '#f0f0f0' }} />
 
             {/* Resumen / Bajada de título */}
             <TextField
@@ -204,29 +194,31 @@ export default function NewPostPage() {
               placeholder="Añade un breve resumen que atrape al lector..."
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
-              InputProps={{
-                sx: { 
-                  fontSize: '1.25rem', 
-                  fontFamily: '"Lora", serif',
-                  fontStyle: 'italic',
-                  lineHeight: 1.6,
-                  color: '#666',
-                  '&:before, &:after': { display: 'none' },
-                  '& textarea::placeholder': { opacity: 0.4 }
+              slotProps={{
+                input: {
+                  disableUnderline: true,
+                  sx: { 
+                    fontSize: '1.4rem', 
+                    fontFamily: '"Lora", serif',
+                    fontStyle: 'italic',
+                    lineHeight: 1.5,
+                    color: '#555',
+                    '& textarea::placeholder': { opacity: 0.3 }
+                  }
                 }
               }}
             />
 
-            <Box sx={{ py: 4 }}>
+            <Box sx={{ pt: 4 }}>
               <Editor onChange={setContent} />
             </Box>
           </Stack>
         </Paper>
 
         {/* Footer info */}
-        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center', opacity: 0.3 }}>
-          <Typography variant="caption" sx={{ letterSpacing: 2, textTransform: 'uppercase' }}>
-            Literudo Editorial Engine
+        <Box sx={{ mt: 6, display: 'flex', justifyContent: 'center', opacity: 0.2 }}>
+          <Typography variant="caption" sx={{ letterSpacing: 4, textTransform: 'uppercase', fontSize: '0.6rem', fontWeight: 700 }}>
+            Literudo Editorial Engine — v1.0
           </Typography>
         </Box>
       </Container>
