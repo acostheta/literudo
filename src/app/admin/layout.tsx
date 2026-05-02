@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { name: "Dashboard", href: "/admin" },
   { name: "Usuarios", href: "/admin/usuarios" },
+  { name: "Posts", href: "/admin/posts" },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -24,7 +25,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`nav-link ${pathname === item.href || (item.href === "/admin" && pathname === "/admin") ? "active" : ""}`}
+                className={`nav-link ${pathname === item.href ? "active" : ""}`} 
               >
                 {item.name}
               </Link>
