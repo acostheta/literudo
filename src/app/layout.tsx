@@ -6,6 +6,8 @@ export const metadata: Metadata = {
   description: "Blog para Agrupación Estudiantil Literudo",
 };
 
+import Providers from "@/components/Providers";
+
 export default function RootLayout({
   children,
 }: {
@@ -13,7 +15,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }

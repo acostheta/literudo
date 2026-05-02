@@ -1,6 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Box,
+  Button,
+  Container,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Stack,
+  Chip,
+  IconButton,
+  Collapse,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+  Close as CloseIcon,
+  Person as PersonIcon,
+} from "@mui/icons-material";
 
 interface User {
   id: number;
@@ -39,120 +67,109 @@ export default function UsersPage() {
   };
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-        <h2 style={{ margin: 0 }}>User Management</h2>
-        <button 
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mb: 4 }}>
+        <Typography variant="h4" component="h2" sx={{ fontWeight: "bold", color: "primary.main" }}>
+          User Management
+        </Typography>
+        <Button
+          variant="contained"
+          startIcon={isAdding ? <CloseIcon /> : <AddIcon />}
           onClick={() => setIsAdding(!isAdding)}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "#1a1a2e",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer"
-          }}
+          color={isAdding ? "error" : "primary"}
         >
           {isAdding ? "Cancel" : "Add New User"}
-        </button>
-      </div>
+        </Button>
+      </Stack>
 
-      {isAdding && (
-        <form onSubmit={handleAddUser} style={{ 
-          background: "white", 
-          padding: "1.5rem", 
-          borderRadius: "8px", 
-          boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-          marginBottom: "2rem",
-          display: "grid",
-          gap: "1rem",
-          gridTemplateColumns: "1fr 1fr 1fr auto"
-        }}>
-          <input 
-            type="text" 
-            placeholder="Name" 
-            value={newUser.name}
-            onChange={(e) => setNewUser({...newUser, name: e.target.value})}
-            style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid #ddd" }}
-            required
-          />
-          <input 
-            type="email" 
-            placeholder="Email" 
-            value={newUser.email}
-            onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-            style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid #ddd" }}
-            required
-          />
-          <select 
-            value={newUser.role}
-            onChange={(e) => setNewUser({...newUser, role: e.target.value})}
-            style={{ padding: "0.5rem", borderRadius: "4px", border: "1px solid #ddd" }}
-          >
-            <option value="Administrator">Administrator</option>
-            <option value="Editor">Editor</option>
-            <option value="Viewer">Viewer</option>
-          </select>
-          <button type="submit" style={{ 
-            padding: "0.5rem 1rem", 
-            backgroundColor: "#28a745", 
-            color: "white", 
-            border: "none", 
-            borderRadius: "4px", 
-            cursor: "pointer" 
-          }}>
-            Save
-          </button>
-        </form>
-      )}
+      <Collapse in={isAdding}>
+        <Paper sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Create New User</Typography>
+          <Box component="form" onSubmit={handleAddUser}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                value={newUser.name}
+                onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Email Address"
+                type="email"
+                value={newUser.email}
+                onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                required
+              />
+              <FormControl fullWidth>
+                <InputLabel>Role</InputLabel>
+                <Select
+                  value={newUser.role}
+                  label="Role"
+                  onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                >
+                  <option value="Administrator">Administrator</option>
+                  <MenuItem value="Administrator">Administrator</MenuItem>
+                  <MenuItem value="Editor">Editor</MenuItem>
+                  <MenuItem value="Viewer">Viewer</MenuItem>
+                </Select>
+              </FormControl>
+              <Button type="submit" variant="contained" color="success" sx={{ minWidth: '120px' }}>
+                Save User
+              </Button>
+            </Stack>
+          </Box>
+        </Paper>
+      </Collapse>
 
-      <div style={{ background: "white", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-          <thead style={{ background: "#f8f9fa" }}>
-            <tr>
-              <th style={{ padding: "1rem", borderBottom: "1px solid #eee" }}>Name</th>
-              <th style={{ padding: "1rem", borderBottom: "1px solid #eee" }}>Email</th>
-              <th style={{ padding: "1rem", borderBottom: "1px solid #eee" }}>Role</th>
-              <th style={{ padding: "1rem", borderBottom: "1px solid #eee", textAlign: "right" }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }}>
+          <TableHead sx={{ backgroundColor: "grey.100" }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: "bold" }}>User</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold" }}>Role</TableCell>
+              <TableCell align="right" sx={{ fontWeight: "bold" }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
             {users.map((user) => (
-              <tr key={user.id} style={{ borderBottom: "1px solid #eee" }}>
-                <td style={{ padding: "1rem" }}>{user.name}</td>
-                <td style={{ padding: "1rem" }}>{user.email}</td>
-                <td style={{ padding: "1rem" }}>
-                  <span style={{ 
-                    padding: "0.25rem 0.5rem", 
-                    backgroundColor: user.role === "Administrator" ? "#e3f2fd" : "#f1f3f5",
-                    color: user.role === "Administrator" ? "#0d47a1" : "#495057",
-                    borderRadius: "4px",
-                    fontSize: "0.85rem"
-                  }}>
-                    {user.role}
-                  </span>
-                </td>
-                <td style={{ padding: "1rem", textAlign: "right" }}>
-                  <button 
-                    onClick={() => deleteUser(user.id)}
-                    style={{ 
-                      padding: "0.25rem 0.5rem", 
-                      backgroundColor: "#dc3545", 
-                      color: "white", 
-                      border: "none", 
-                      borderRadius: "4px", 
-                      cursor: "pointer",
-                      fontSize: "0.85rem"
-                    }}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+              <TableRow key={user.id} hover>
+                <TableCell>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <PersonIcon color="action" />
+                    <Typography variant="body2">{user.name}</Typography>
+                  </Stack>
+                </TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>
+                  <Chip 
+                    label={user.role} 
+                    size="small"
+                    color={user.role === "Administrator" ? "primary" : "default"}
+                    variant={user.role === "Administrator" ? "filled" : "outlined"}
+                  />
+                </TableCell>
+                <TableCell align="right">
+                  <IconButton color="error" onClick={() => deleteUser(user.id)} size="small">
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+            {users.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No users found.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Container>
   );
 }
