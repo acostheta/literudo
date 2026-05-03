@@ -48,7 +48,10 @@ export default function LoginPage() {
     setSuccess(null);
 
     if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email: email.trim(), 
+        password: password.trim() 
+      });
       if (error) {
         setError("Credenciales incorrectas.");
         setLoading(false);
@@ -57,20 +60,27 @@ export default function LoginPage() {
       }
     } 
     else if (mode === "register") {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
+      // Registro limpio con redirección automática
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
         options: {
-          data: { name },
+          data: { name: name.trim() },
         },
       });
+      
       if (error) {
+        console.error("Auth Error:", error);
         setError(error.message);
         setLoading(false);
       } else {
-        setSuccess("¡Cuenta creada! Por favor, revisa tu correo para confirmar (si está habilitado) o intenta iniciar sesión.");
-        setLoading(false);
-        setMode("login");
+        // Si Supabase devuelve una sesión (confirmación desactivada), redirigimos ya
+        if (data.session) {
+          router.push("/admin");
+        } else {
+          setSuccess("¡Cuenta creada! Por favor, revisa tu correo para confirmar y poder entrar.");
+          setLoading(false);
+        }
       }
     }
     else if (mode === "forgot-password") {
@@ -154,10 +164,12 @@ export default function LoginPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
-                      sx: { borderRadius: 0 }
+                    slotProps={{
+                      input: {
+                        startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
+                      }
                     }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
                   />
                 )}
                 
@@ -168,10 +180,12 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start"><EmailIcon color="action" /></InputAdornment>,
-                    sx: { borderRadius: 0 }
+                  slotProps={{
+                    input: {
+                      startAdornment: <InputAdornment position="start"><EmailIcon color="action" /></InputAdornment>,
+                    }
                   }}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
                 />
 
                 {mode !== "forgot-password" && (
@@ -183,17 +197,19 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start"><LockIcon color="action" /></InputAdornment>,
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                      sx: { borderRadius: 0 }
+                    slotProps={{
+                      input: {
+                        startAdornment: <InputAdornment position="start"><LockIcon color="action" /></InputAdornment>,
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }
                     }}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
                   />
                 )}
 

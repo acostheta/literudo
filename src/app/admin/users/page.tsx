@@ -34,7 +34,6 @@ interface UserProfile {
   name: string;
   email: string;
   role: string;
-  password?: string;
   avatar_url?: string;
   about_me?: string;
   status: string;
@@ -117,11 +116,11 @@ export default function UsersPage() {
               users.map((user) => (
                 <TableRow key={user.id} hover onClick={() => router.push(`/admin/users/${user.id}`)} sx={{ cursor: 'pointer' }}>
                   <TableCell sx={{ py: 2, width: "40%", overflow: 'hidden' }}>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                       <Avatar src={user.avatar_url} sx={{ border: '1px solid #eee', flexShrink: 0 }}>{user.name.charAt(0)}</Avatar>
                       <Box sx={{ overflow: 'hidden' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', lineHeight: 1.2, noWrap: true }}>{user.name}</Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1, display: 'block', noWrap: true }}>{user.email}</Typography>
+                        <Typography variant="body2" noWrap sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>{user.name}</Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap sx={{ lineHeight: 1, display: 'block' }}>{user.email}</Typography>
                       </Box>
                     </Stack>
                   </TableCell>

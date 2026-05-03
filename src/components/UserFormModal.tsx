@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Box,
@@ -29,7 +29,6 @@ interface UserProfile {
   name: string;
   email: string;
   role: string;
-  password?: string;
   avatar_url?: string;
   about_me?: string;
   status: string;
@@ -47,29 +46,36 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<UserProfile>({
-    name: user?.name || "",
-    email: user?.email || "",
-    password: user?.password || "",
-    role: user?.role || "Usuario",
-    avatar_url: user?.avatar_url || "",
-    about_me: user?.about_me || "",
-    status: user?.status || "activo",
+    name: "",
+    email: "",
+    role: "Usuario",
+    avatar_url: "",
+    about_me: "",
+    status: "activo",
   });
 
   // Update form data when user prop changes (e.g. when opening for edit)
-  useState(() => {
+  useEffect(() => {
     if (user) {
       setFormData({
         name: user.name,
         email: user.email,
-        password: user.password || "",
         role: user.role,
         avatar_url: user.avatar_url || "",
         about_me: user.about_me || "",
         status: user.status,
       });
+    } else {
+      setFormData({
+        name: "",
+        email: "",
+        role: "Usuario",
+        avatar_url: "",
+        about_me: "",
+        status: "activo",
+      });
     }
-  });
+  }, [user, open]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -129,14 +135,14 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: 3 } }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md" slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
       <DialogTitle sx={{ fontWeight: 'bold', pt: 3 }}>
         {user?.id ? "Editar Perfil de Usuario" : "Crear Nuevo Usuario"}
       </DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent dividers>
           <Stack spacing={4} sx={{ py: 1 }}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} alignItems="center">
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ alignItems: "center" }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Avatar src={formData.avatar_url} sx={{ width: 120, height: 120, mb: 2, mx: 'auto', border: '2px solid #eee' }}>
                   <PersonIcon sx={{ fontSize: 70 }} />
@@ -147,12 +153,14 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
                 </Button>
               </Box>
               
-              <Stack spacing={2} flex={1}>
+              <Stack spacing={2} sx={{ flex: 1 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField fullWidth label="Nombre Completo" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                   <TextField fullWidth label="Email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
                 </Stack>
-                <TextField fullWidth label="Contraseña" type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} required />
+                <Typography variant="caption" color="text.secondary">
+                  * La contraseña se gestiona de forma segura a través de Supabase Auth.
+                </Typography>
               </Stack>
             </Stack>
             
@@ -180,7 +188,7 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={onClose} color="inherit">Cancelar</Button>
           <Button type="submit" variant="contained" color="success" disabled={uploading} sx={{ px: 4 }}>
-            {user?.id ? "Guardar Cambios" : "Crear Usuario"}
+            {user?.id ? "Guardar Cambios" : "Crear Perfil"}
           </Button>
         </DialogActions>
       </Box>

@@ -73,7 +73,7 @@ export default function PostsPage() {
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
+      <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 4 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
             Gestión de Artículos
@@ -145,7 +145,7 @@ export default function PostsPage() {
                     {new Date(post.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell align="right" onClick={(e) => e.stopPropagation()}>
-                    <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
                       <IconButton size="small" component={Link} href={`/admin/posts/${post.slug}`}>
                         <ViewIcon fontSize="small" />
                       </IconButton>

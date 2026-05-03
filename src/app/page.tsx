@@ -79,7 +79,7 @@ export default function Home() {
             Bitácora de Pensamiento Literario
           </Typography>
           
-          <Stack direction="row" spacing={3} justifyContent="center" sx={{ mt: 2 }}>
+          <Stack direction="row" spacing={3} sx={{ justifyContent: "center", mt: 2 }}>
             <Typography component={Link} href="/" sx={{ textDecoration: 'none', color: 'inherit', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>
               Inicio
             </Typography>
@@ -168,7 +168,7 @@ export default function Home() {
       {/* Footer */}
       <Box sx={{ mt: 20, py: 6, borderTop: '1px solid #eee', textAlign: 'center', opacity: 0.3 }}>
         <Typography variant="caption" sx={{ letterSpacing: 2 }}>
-          © {new Date().getFullYear()} LITERUDO — DESDE EL ALMA
+          © {new Date().getFullYear()} LITERUDO — AÚN EN SILENCIO
         </Typography>
       </Box>
     </Box>

@@ -19,7 +19,6 @@ interface UserProfile {
   name: string;
   email: string;
   role: string;
-  password?: string;
   avatar_url?: string;
   about_me?: string;
   status: string;
