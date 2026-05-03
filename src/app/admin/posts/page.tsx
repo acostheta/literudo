@@ -19,6 +19,7 @@ import {
   IconButton,
   Stack,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -133,13 +134,30 @@ export default function PostsPage() {
                     <Typography variant="caption" color="text.secondary">/{post.slug}</Typography>
                   </TableCell>
                   <TableCell>{post.profiles?.name || "Desconocido"}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={post.status === "publicado" ? "Publicado" : "Borrador"}
-                      size="small"
-                      color={post.status === "publicado" ? "success" : "default"}
-                      sx={{ borderRadius: 0, fontWeight: "bold" }}
-                    />
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Tooltip title="Haz clic para cambiar el estatus">
+                      <Chip
+                        label={post.status === "publicado" ? "Publicado" : "Borrador"}
+                        size="small"
+                        color={post.status === "publicado" ? "success" : "default"}
+                        onClick={async () => {
+                          const newStatus = post.status === "publicado" ? "borrador" : "publicado";
+                          const { error } = await supabase
+                            .from("posts")
+                            .update({ status: newStatus })
+                            .eq("id", post.id);
+                          
+                          if (error) alert("Error: " + error.message);
+                          else fetchPosts(); // Refrescamos la lista
+                        }}
+                        sx={{ 
+                          borderRadius: 0, 
+                          fontWeight: "bold", 
+                          cursor: 'pointer',
+                          '&:hover': { opacity: 0.8 }
+                        }}
+                      />
+                    </Tooltip>
                   </TableCell>
                   <TableCell>
                     {new Date(post.created_at).toLocaleDateString()}

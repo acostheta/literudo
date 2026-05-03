@@ -14,6 +14,9 @@ import {
   Alert,
   Breadcrumbs,
   Divider,
+  Select,
+  MenuItem,
+  FormControl,
   Link as MuiLink,
 } from "@mui/material";
 import { Save as SaveIcon, ArrowBack as BackIcon } from "@mui/icons-material";
@@ -29,6 +32,7 @@ export default function NewPostPage() {
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState<any>(null);
+  const [status, setStatus] = useState("borrador");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,7 +66,7 @@ export default function NewPostPage() {
       excerpt,
       content,
       author_id: user?.id,
-      status: "borrador",
+      status,
     });
 
     if (saveError) {
@@ -101,6 +105,22 @@ export default function NewPostPage() {
             </Box>
             
             <Stack direction="row" spacing={3} sx={{ alignItems: "center" }}>
+              <FormControl size="small" variant="standard">
+                <Select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  sx={{ 
+                    fontSize: '0.8rem', 
+                    fontWeight: 'bold', 
+                    color: status === "publicado" ? "success.main" : "text.secondary",
+                    '&:before, &:after': { display: 'none' }
+                  }}
+                >
+                  <MenuItem value="borrador">Borrador</MenuItem>
+                  <MenuItem value="publicado">Publicado</MenuItem>
+                </Select>
+              </FormControl>
+
               <MuiLink 
                 component="button"
                 onClick={() => router.back()}

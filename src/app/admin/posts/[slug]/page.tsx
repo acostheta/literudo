@@ -189,21 +189,48 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
       </Box>
 
       <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 100 }}>
-        <Button 
-          component={Link} 
-          href={`/admin/posts/edit/${post.id}`}
-          variant="contained"
-          startIcon={<EditIcon />}
-          sx={{ 
-            bgcolor: '#1a1a1a', 
-            borderRadius: 0, 
-            px: 3,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            '&:hover': { bgcolor: '#000' }
-          }}
-        >
-          Editar Obra
-        </Button>
+        <Stack direction="row" spacing={2}>
+          <Button 
+            variant="outlined"
+            onClick={async () => {
+              const newStatus = post.status === "publicado" ? "borrador" : "publicado";
+              const { error } = await supabase
+                .from("posts")
+                .update({ status: newStatus })
+                .eq("id", post.id);
+              
+              if (error) alert("Error: " + error.message);
+              else setPost({ ...post, status: newStatus });
+            }}
+            sx={{ 
+              bgcolor: 'white', 
+              borderRadius: 0, 
+              px: 3,
+              borderColor: post.status === "publicado" ? "success.main" : "warning.main",
+              color: post.status === "publicado" ? "success.main" : "warning.main",
+              fontWeight: 'bold',
+              '&:hover': { bgcolor: '#f5f5f5', borderColor: post.status === "publicado" ? "success.dark" : "warning.dark" }
+            }}
+          >
+            {post.status === "publicado" ? "Pasar a Borrador" : "Publicar Obra"}
+          </Button>
+
+          <Button 
+            component={Link} 
+            href={`/admin/posts/edit/${post.id}`}
+            variant="contained"
+            startIcon={<EditIcon />}
+            sx={{ 
+              bgcolor: '#1a1a1a', 
+              borderRadius: 0, 
+              px: 3,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              '&:hover': { bgcolor: '#000' }
+            }}
+          >
+            Editar Obra
+          </Button>
+        </Stack>
       </Box>
 
       <Container maxWidth="sm" sx={{ pt: { xs: 10, md: 20 } }}>
