@@ -1,52 +1,31 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Lora } from "next/font/google";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import Navbar from "@/components/Navbar";
+import Providers from "@/components/Providers";
+import { Lora, Inter } from "next/font/google";
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const lora = Lora({
-  variable: "--font-lora",
-  subsets: ["latin"],
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const lora = Lora({ subsets: ["latin"], variable: "--font-lora" });
 
 export const metadata: Metadata = {
-  title: "Literudo Blog - Explora el Mundo a través de la Literatura",
-  description: "Un proyecto web moderno dedicado a la literatura, reflexiones y arte de escribir.",
+  title: "Literudo | Admin",
+  description: "Blog para Agrupación Estudiantil Literudo",
+  icons: {
+    icon: "/Logo_UDO.svg",
+    apple: "/Logo_UDO.svg",
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="es">
-      <body className={`${playfair.variable} ${lora.variable}`} suppressHydrationWarning>
-        <Sidebar />
-        <div style={{
-          marginLeft: '280px',
-          minHeight: '100vh',
-          background: 'var(--background)'
-        }} className="main-wrapper">
-          <Navbar />
-          <main className="main-content">
-            {children}
-          </main>
-        </div>
-        <style jsx>{`
-          @media (max-width: 900px) {
-            .main-wrapper {
-              margin-left: 0 !important;
-            }
-          }
-        `}</style>
+    <html lang="es" className={`${inter.variable} ${lora.variable}`}>
+      <body className={inter.className} suppressHydrationWarning>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

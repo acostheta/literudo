@@ -1,183 +1,176 @@
-import Link from 'next/link';
-import ArticleCard from '@/components/ArticleCard';
+"use client";
 
-const mockArticles = [
-  {
-    id: '1',
-    title: 'La identidad latinoamericana en la poesía contemporánea',
-    excerpt: 'Un análisis profundo sobre cómo los poetas actuales redefinen los límites de lo que significa ser latinoamericano a través de la literatura.',
-    author: 'María Elena Vásquez',
-    date: '12 Abr 2026',
-    category: 'Análisis'
-  },
-  {
-    id: '2',
-    title: 'Café y篇小说: Historias cortas para leer en la pausa',
-    excerpt: 'Una colección de microrrelatos que capturan momentos cotidianos con una intensidad literaria surprising.',
-    author: 'Carlos Mendoza',
-    date: '10 Abr 2026',
-    category: 'Ficción'
-  },
-  {
-    id: '3',
-    title: 'El diario como género literario: Más allá de la introspección',
-    excerpt: 'Exploramos cómo el formato del diario personal se ha convertido en una herramienta narrativa fundamental.',
-    author: 'Ana Lucía Torres',
-    date: '8 Abr 2026',
-    category: 'Crónica'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import {
+  Box,
+  Container,
+  Typography,
+  Stack,
+  Divider,
+  CircularProgress,
+  Button,
+} from "@mui/material";
+
+interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  created_at: string;
+}
+
+export default function Home() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const { data } = await supabase
+        .from("posts")
+        .select("id, title, slug, excerpt, created_at")
+        .eq("status", "publicado")
+        .order("created_at", { ascending: false });
+
+      if (data) setPosts(data);
+      setLoading(false);
+    };
+
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#fdfdfb' }}>
+        <CircularProgress color="inherit" size={30} />
+      </Box>
+    );
   }
-];
 
-const featuredArticle = {
-  id: 'featured',
-  title: 'Memoria y olvido: La literatura como acto de resistencia',
-  excerpt: 'En tiempos donde la información se desvanece, la literatura permanece como guardiana de nuestra memoria colectiva. Este ensayo explora cómo los escritores contemporáneos utilizan la palabra escrita como herramienta de preservación cultural.',
-  author: 'Dr. Roberto Jiménez',
-  date: '15 Abr 2026',
-  category: 'Ensayo Destacado'
-};
-
-export default function HomePage() {
   return (
-    <div className="animate-fade-in">
-      <section style={{
-        padding: '4rem 2rem',
-        textAlign: 'center',
-        background: 'var(--background-alt)',
-        borderBottom: '1px solid var(--border)'
-      }}>
-        <div className="container">
-          <h1 style={{
-            fontFamily: 'var(--font-playfair)',
-            fontSize: 'clamp(2rem, 4vw, 3rem)',
-            marginBottom: '1.5rem',
-            letterSpacing: '-1px'
-          }}>
-            Donde las letras universitarias cobran vida
-          </h1>
-          <p style={{
-            fontSize: '1.1rem',
-            color: 'var(--foreground-muted)',
-            maxWidth: '600px',
-            margin: '0 auto 2rem',
-            lineHeight: '1.8'
-          }}>
-            Un espacio dedicado a la difusión de la creación literaria, el pensamiento crítico y el arte de escribir desde las aulas universitarias.
-          </p>
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            justifyContent: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <Link href="/blog" style={{
-              padding: '0.8rem 1.5rem',
-              background: 'var(--primary)',
-              color: '#fff',
-              borderRadius: '6px',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              Explorar Escritos
-            </Link>
-            <Link href="/nuevo-envio" style={{
-              padding: '0.8rem 1.5rem',
-              background: 'transparent',
-              color: 'var(--foreground)',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              Enviar mi Texto
-            </Link>
-          </div>
-        </div>
-      </section>
+    <Box sx={{ bgcolor: '#fdfdfb', minHeight: '100vh', color: '#1a1a1a', pb: 10 }}>
+      {/* Cabecera Clásica Estilo Blogspot/Editorial */}
+      <Box sx={{ pt: 10, pb: 6, textAlign: 'center', borderBottom: '1px solid #eee' }}>
+        <Container maxWidth="md">
+          <Typography 
+            variant="h1" 
+            sx={{ 
+              fontFamily: '"Lora", serif', 
+              fontWeight: 800, 
+              fontSize: { xs: '3rem', md: '5rem' },
+              letterSpacing: -2,
+              mb: 1
+            }}
+          >
+            Literudo
+          </Typography>
+          <Typography 
+            variant="overline" 
+            sx={{ 
+              letterSpacing: 4, 
+              opacity: 0.5, 
+              fontWeight: 700,
+              display: 'block',
+              mb: 4
+            }}
+          >
+            Bitácora de Pensamiento Literario
+          </Typography>
+          
+          <Stack direction="row" spacing={3} sx={{ justifyContent: "center", mt: 2 }}>
+            <Typography component={Link} href="/" sx={{ textDecoration: 'none', color: 'inherit', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>
+              Inicio
+            </Typography>
+            <Typography component={Link} href="/admin" sx={{ textDecoration: 'none', color: 'primary.main', fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>
+              Admin
+            </Typography>
+          </Stack>
+        </Container>
+      </Box>
 
-      <section style={{ padding: '3rem 0' }}>
-        <div className="container">
-          <h2 style={{
-            fontFamily: 'var(--font-playfair)',
-            fontSize: '1.6rem',
-            marginBottom: '1.5rem'
-          }}>
-            Destacado del Mes
-          </h2>
-          <ArticleCard {...featuredArticle} variant="featured" />
-        </div>
-      </section>
+      {/* Lista de Entradas */}
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
+        <Stack spacing={12}>
+          {posts.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 10 }}>
+              <Typography sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                El tintero está vacío por ahora. Vuelve pronto.
+              </Typography>
+            </Box>
+          ) : (
+            posts.map((post) => (
+              <Box key={post.id} component="article" sx={{ textAlign: 'center' }}>
+                {/* Fecha */}
+                <Typography variant="caption" sx={{ letterSpacing: 2, textTransform: 'uppercase', opacity: 0.4, mb: 2, display: 'block' }}>
+                  {new Date(post.created_at).toLocaleDateString('es-ES', { 
+                    day: 'numeric', 
+                    month: 'long', 
+                    year: 'numeric' 
+                  })}
+                </Typography>
 
-      <section style={{ padding: '2rem 0 4rem' }}>
-        <div className="container">
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1.5rem'
-          }}>
-            <h2 style={{
-              fontFamily: 'var(--font-playfair)',
-              fontSize: '1.6rem'
-            }}>
-              Últimas Publicaciones
-            </h2>
-            <Link href="/blog" style={{
-              color: 'var(--primary)',
-              fontWeight: '600',
-              fontSize: '0.9rem'
-            }}>
-              Ver todas →
-            </Link>
-          </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '1.5rem'
-          }}>
-            {mockArticles.map((article) => (
-              <ArticleCard key={article.id} {...article} />
-            ))}
-          </div>
-        </div>
-      </section>
+                {/* Título */}
+                <Typography 
+                  variant="h2" 
+                  component={Link}
+                  href={`/posts/${post.slug}`}
+                  sx={{ 
+                    fontFamily: '"Lora", serif', 
+                    fontWeight: 800, 
+                    fontSize: { xs: '2rem', md: '2.8rem' },
+                    lineHeight: 1.2,
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    display: 'block',
+                    mb: 3,
+                    '&:hover': { opacity: 0.7 }
+                  }}
+                >
+                  {post.title}
+                </Typography>
 
-      <section style={{
-        padding: '3rem 0',
-        background: 'var(--primary)',
-        color: '#fff',
-        textAlign: 'center'
-      }}>
-        <div className="container">
-          <h2 style={{
-            fontFamily: 'var(--font-playfair)',
-            fontSize: '1.8rem',
-            marginBottom: '1rem',
-            color: '#fff'
-          }}>
-            ¿Eres escritor universitario?
-          </h2>
-          <p style={{
-            fontSize: '1rem',
-            opacity: 0.9,
-            maxWidth: '500px',
-            margin: '0 auto 1.5rem'
-          }}>
-            Comparte tu voz con nuestra comunidad. Aceptamos poemas, cuentos, ensayos y más.
-          </p>
-          <Link href="/nuevo-envio" style={{
-            display: 'inline-block',
-            padding: '0.8rem 1.5rem',
-            background: '#fff',
-            color: 'var(--primary)',
-            borderRadius: '6px',
-            fontWeight: '700',
-            fontSize: '0.95rem'
-          }}>
-            Conoce cómo enviar
-          </Link>
-        </div>
-      </section>
-    </div>
+                {/* Resumen */}
+                <Typography 
+                  sx={{ 
+                    fontFamily: '"Lora", serif', 
+                    fontSize: '1.15rem', 
+                    color: '#444',
+                    lineHeight: 1.8,
+                    mb: 4,
+                    textAlign: 'center'
+                  }}
+                >
+                  {post.excerpt || "Sin resumen disponible..."}
+                </Typography>
+
+                <Button 
+                  component={Link}
+                  href={`/posts/${post.slug}`}
+                  sx={{ 
+                    color: 'primary.main', 
+                    fontWeight: 800, 
+                    textTransform: 'none',
+                    fontSize: '0.9rem',
+                    fontFamily: '"Lora", serif',
+                    fontStyle: 'italic'
+                  }}
+                >
+                  Seguir leyendo →
+                </Button>
+              </Box>
+            ))
+          )}
+        </Stack>
+      </Container>
+
+      {/* Footer */}
+      <Box sx={{ mt: 20, py: 6, borderTop: '1px solid #eee', textAlign: 'center', opacity: 0.3 }}>
+        <Typography variant="caption" sx={{ letterSpacing: 2 }}>
+          © {new Date().getFullYear()} LITERUDO — AÚN EN SILENCIO
+        </Typography>
+      </Box>
+    </Box>
   );
 }
