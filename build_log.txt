@@ -1,0 +1,29 @@
+
+> literudo@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.15
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 5.1s
+   Linting and checking validity of types ...
+Failed to compile.
+
+./src/app/admin/posts/edit/[id]/page.tsx:255:23
+Type error: No overload matches this call.
+  Overload 1 of 2, '(props: EditorProps, context?: any): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | ... 4 more ... | undefined', gave the following error.
+    Type '{ initialContent: any; onChange: Dispatch<any>; }' is not assignable to type 'IntrinsicAttributes & EditorProps'.
+      Property 'initialContent' does not exist on type 'IntrinsicAttributes & EditorProps'.
+  Overload 2 of 2, '(props: EditorProps): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | Promise<...> | Component<...> | null | undefined', gave the following error.
+    Type '{ initialContent: any; onChange: Dispatch<any>; }' is not assignable to type 'IntrinsicAttributes & EditorProps'.
+      Property 'initialContent' does not exist on type 'IntrinsicAttributes & EditorProps'.
+
+[0m [90m 253 |[39m
+ [90m 254 |[39m             [33m<[39m[33mBox[39m sx[33m=[39m{{ pt[33m:[39m [35m4[39m }}[33m>[39m
+[31m[1m>[22m[39m[90m 255 |[39m               [33m<[39m[33mEditor[39m initialContent[33m=[39m{content} onChange[33m=[39m{setContent} [33m/[39m[33m>[39m
+ [90m     |[39m                       [31m[1m^[22m[39m
+ [90m 256 |[39m             [33m<[39m[33m/[39m[33mBox[39m[33m>[39m
+ [90m 257 |[39m           [33m<[39m[33m/[39m[33mStack[39m[33m>[39m
+ [90m 258 |[39m         [33m<[39m[33m/[39m[33mPaper[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

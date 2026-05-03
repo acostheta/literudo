@@ -47,7 +47,7 @@ import {
   KeyboardArrowDown,
   CodeOff,
 } from "@mui/icons-material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface EditorProps {
   content?: any;
@@ -291,6 +291,13 @@ export default function Editor({ content, onChange }: EditorProps) {
       },
     },
   });
+
+  // Efecto para cargar el contenido cuando llega de forma asíncrona (edición)
+  useEffect(() => {
+    if (editor && content && editor.isEmpty) {
+      editor.commands.setContent(content);
+    }
+  }, [editor, content]);
 
   if (!editor) return null;
 

@@ -44,12 +44,30 @@ export default function PostsPage() {
   const supabase = createClient();
 
   const fetchPosts = async () => {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*, profiles(name)")
-      .order("created_at", { ascending: false });
+    setLoading(true);
+    
+    // 1. Obtener el usuario actual y su perfil
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    // 2. Construir la consulta según el rol
+    let query = supabase.from("posts").select("*, profiles(name)");
+
+    if (profile?.role !== "Administrador") {
+      // Si es "Usuario", solo ve los suyos
+      query = query.eq("author_id", user.id);
+    }
+
+    const { data, error } = await query.order("created_at", { ascending: false });
 
     if (data) setPosts(data);
+    if (error) console.error("Error fetching posts:", error);
     setLoading(false);
   };
 
