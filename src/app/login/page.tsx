@@ -84,10 +84,9 @@ export default function LoginPage() {
       }
     }
     else if (mode === "forgot-password") {
-      const siteUrl =
-        process.env.NEXT_PUBLIC_SITE_URL ||
-        (process.env.NEXT_PUBLIC_VERCEL_URL ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` : undefined) ||
-        window.location.origin;
+      const siteUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+        ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+        : process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${siteUrl}/reset-password`,
       });
