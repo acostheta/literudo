@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import PasswordRecoveryWizard from "@/components/PasswordRecoveryWizard";
 import {
   Box,
   Button,
@@ -16,6 +17,8 @@ import {
   IconButton,
   CircularProgress,
   Link as MuiLink,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import {
   Visibility,
@@ -33,10 +36,19 @@ export default function LoginPage() {
   const supabase = createClient();
   
   const [mode, setMode] = useState<AuthMode>("login");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "forgot-password") {
+      setMode("forgot-password");
+    }
+  }, []);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState(""); // For registration
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -56,6 +68,9 @@ export default function LoginPage() {
         setError("Credenciales incorrectas.");
         setLoading(false);
       } else {
+        document.cookie = rememberMe
+          ? `literudo_remember=1; path=/; max-age=2592000; samesite=lax`
+          : `literudo_remember=0; path=/; samesite=lax`;
         router.push("/admin");
       }
     } 
@@ -82,20 +97,6 @@ export default function LoginPage() {
           setLoading(false);
         }
       }
-    }
-    else if (mode === "forgot-password") {
-      const siteUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-        ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-        : process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${siteUrl}/reset-password`,
-      });
-      if (error) {
-        setError(error.message);
-      } else {
-        setSuccess("Se ha enviado un enlace de recuperación a tu correo.");
-      }
-      setLoading(false);
     }
   };
 
@@ -150,48 +151,55 @@ export default function LoginPage() {
                   ? '"El conocimiento es la única libertad"' 
                   : mode === "register" 
                     ? "Únete a nuestra comunidad estudiantil" 
-                    : "Te enviaremos instrucciones a tu correo"}
+                    : "Te enviaremos un código a tu correo para restablecer tu contraseña"}
               </Typography>
             </Box>
 
             {error && <Alert severity="error" sx={{ width: "100%", borderRadius: 0 }}>{error}</Alert>}
             {success && <Alert severity="success" sx={{ width: "100%", borderRadius: 0 }}>{success}</Alert>}
 
-            <Box component="form" onSubmit={handleAuth} sx={{ width: "100%" }}>
-              <Stack spacing={3}>
-                {mode === "register" && (
+            {mode === "forgot-password" ? (
+              <PasswordRecoveryWizard
+                onSuccess={() => {
+                  setMode("login");
+                  setSuccess("¡Contraseña actualizada! Inicia sesión con tu nueva contraseña.");
+                }}
+              />
+            ) : (
+              <Box component="form" onSubmit={handleAuth} sx={{ width: "100%" }}>
+                <Stack spacing={3}>
+                  {mode === "register" && (
+                    <TextField
+                      fullWidth
+                      label="Nombre Completo"
+                      variant="outlined"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      slotProps={{
+                        input: {
+                          startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
+                        }
+                      }}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
+                    />
+                  )}
+
                   <TextField
                     fullWidth
-                    label="Nombre Completo"
+                    label="Correo Electrónico"
                     variant="outlined"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     slotProps={{
                       input: {
-                        startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
+                        startAdornment: <InputAdornment position="start"><EmailIcon color="action" /></InputAdornment>,
                       }
                     }}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
                   />
-                )}
-                
-                <TextField
-                  fullWidth
-                  label="Correo Electrónico"
-                  variant="outlined"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  slotProps={{
-                    input: {
-                      startAdornment: <InputAdornment position="start"><EmailIcon color="action" /></InputAdornment>,
-                    }
-                  }}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
-                />
 
-                {mode !== "forgot-password" && (
                   <TextField
                     fullWidth
                     label="Contraseña"
@@ -214,48 +222,60 @@ export default function LoginPage() {
                     }}
                     sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
                   />
-                )}
 
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  size="large"
-                  disabled={loading}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: 0,
-                    fontWeight: "bold",
-                    boxShadow: "none",
-                  }}
-                >
-                  {loading ? <CircularProgress size={24} color="inherit" /> : mode === "login" ? "ENTRAR" : mode === "register" ? "REGISTRARME" : "ENVIAR ENLACE"}
-                </Button>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        sx={{ '& .MuiSvgIcon-root': { borderRadius: 0 } }}
+                      />
+                    }
+                    label="Recordarme en este equipo"
+                    sx={{ alignSelf: 'flex-start', '& .MuiTypography-root': { fontSize: '0.875rem' } }}
+                  />
 
-                {mode === "login" && (
-                  <Stack spacing={1} sx={{ alignItems: "center" }}>
-                    <MuiLink 
-                      component="button" 
-                      type="button"
-                      variant="caption" 
-                      onClick={() => setMode("forgot-password")}
-                      sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                    >
-                      ¿Olvidaste tu contraseña?
-                    </MuiLink>
-                    <MuiLink 
-                      component="button" 
-                      type="button"
-                      variant="caption" 
-                      onClick={() => setMode("register")}
-                      sx={{ color: 'primary.main', fontWeight: 'bold', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
-                    >
-                      Crear cuenta
-                    </MuiLink>
-                  </Stack>
-                )}
-              </Stack>
-            </Box>
+                  <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    size="large"
+                    disabled={loading}
+                    sx={{
+                      py: 1.5,
+                      borderRadius: 0,
+                      fontWeight: "bold",
+                      boxShadow: "none",
+                    }}
+                  >
+                    {loading ? <CircularProgress size={24} color="inherit" /> : mode === "login" ? "ENTRAR" : "REGISTRARME"}
+                  </Button>
+
+                  {mode === "login" && (
+                    <Stack spacing={1} sx={{ alignItems: "center" }}>
+                      <MuiLink 
+                        component="button" 
+                        type="button"
+                        variant="caption" 
+                        onClick={() => setMode("forgot-password")}
+                        sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </MuiLink>
+                      <MuiLink 
+                        component="button" 
+                        type="button"
+                        variant="caption" 
+                        onClick={() => setMode("register")}
+                        sx={{ color: 'primary.main', fontWeight: 'bold', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                      >
+                        Crear cuenta
+                      </MuiLink>
+                    </Stack>
+                  )}
+                </Stack>
+              </Box>
+            )}
             
             <Typography variant="caption" color="text.secondary" sx={{ mt: 4, textAlign: "center", display: "block", width: "100%" }}>
               © {new Date().getFullYear()} Agrupación Estudiantil Literudo

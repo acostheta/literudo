@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: LoginModalProps) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -133,7 +135,11 @@ export default function LoginModal({ isOpen, onClose, onSwitchToRegister }: Logi
               <label htmlFor="password" style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--foreground-muted)' }}>
                 Contraseña
               </label>
-              <button type="button" style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}>
+              <button 
+                type="button"
+                onClick={() => { onClose(); router.push('/login?mode=forgot-password'); }}
+                style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}
+              >
                 ¿Olvidaste tu contraseña?
               </button>
             </div>
