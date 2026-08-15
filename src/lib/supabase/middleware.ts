@@ -35,6 +35,40 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const projectRef = process.env.NEXT_PUBLIC_SUPABASE_URL?.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1]
+  const authTokenCookie = projectRef ? `sb-${projectRef}-auth-token` : null
+
+  // Remember-me policy: if the user has a session but did NOT check
+  // "Recordarme", sign them out (their session cookie was wiped on browser close).
+  if (user && authTokenCookie && request.cookies.has(authTokenCookie)) {
+    const rememberCookie = request.cookies.get('literudo_remember')
+    if (!rememberCookie || rememberCookie.value !== '1') {
+      const supabaseSignOut = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll()
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+              supabaseResponse = NextResponse.next({ request })
+              cookiesToSet.forEach(({ name, value, options }) =>
+                supabaseResponse.cookies.set(name, value, options)
+              )
+            },
+          },
+        }
+      )
+      await supabaseSignOut.auth.signOut()
+      supabaseResponse.cookies.set('literudo_remember', '', { path: '/', maxAge: 0 })
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      return NextResponse.redirect(url)
+    }
+  }
+
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/login') &&

@@ -221,6 +221,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 onClick={async () => {
                   const supabase = (await import('@/lib/supabase/client')).createClient();
                   await supabase.auth.signOut();
+                  document.cookie = 'literudo_remember=; path=/; max-age=0; samesite=lax';
                   window.location.href = '/login';
                 }}
                 sx={{
