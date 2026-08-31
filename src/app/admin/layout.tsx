@@ -23,6 +23,7 @@ import {
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Article as ArticleIcon,
+  Image as ImageIcon,
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   Menu as MenuIcon,
@@ -36,6 +37,7 @@ const navItems = [
   { name: "Dashboard", href: "/admin", icon: <DashboardIcon /> },
   { name: "Usuarios", href: "/admin/users", icon: <PeopleIcon /> },
   { name: "Artículos", href: "/admin/posts", icon: <ArticleIcon /> },
+  { name: "Galería", href: "/admin/gallery", icon: <ImageIcon /> },
 ];
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

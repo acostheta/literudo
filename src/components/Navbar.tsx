@@ -44,6 +44,13 @@ export default function Navbar() {
           }}>
             Explorar
           </Link>
+          <Link href="/gallery" style={{
+            color: 'var(--foreground-muted)',
+            fontSize: '0.9rem',
+            fontWeight: '500'
+          }}>
+            Galería
+          </Link>
           
           <div style={{
             display: 'flex',

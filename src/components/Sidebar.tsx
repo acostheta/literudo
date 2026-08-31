@@ -7,6 +7,7 @@ import {
   Home, 
   BookOpen, 
   PenLine, 
+  Image,
   Settings, 
   LogOut, 
   Menu, 
@@ -20,6 +21,7 @@ import { MOCK_USER } from '@/lib/mock-store';
 const publicNavItems = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/blog', label: 'Blog', icon: BookOpen },
+  { href: '/gallery', label: 'Galería', icon: Image },
   { href: '/nuevo-envio', label: 'Enviar Escrito', icon: PenLine },
 ];
 
