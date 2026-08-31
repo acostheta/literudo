@@ -70,6 +70,9 @@ export default function GalleryForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingCount, setUploadingCount] = useState(0);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [dragSection, setDragSection] = useState<"existing" | "new" | null>(null);
 
   useEffect(() => {
     if (initialTitle) {
@@ -143,6 +146,58 @@ export default function GalleryForm({
     setExistingImages((prev) =>
       prev.map((img) => (img.id === image.id ? { ...img, caption } : img))
     );
+  };
+
+  const reorderExisting = async (fromIndex: number, toIndex: number) => {
+    setExistingImages((prev) => {
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      return updated;
+    });
+  };
+
+  const reorderNew = (fromIndex: number, toIndex: number) => {
+    setImagePreviews((prev) => {
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      return updated;
+    });
+  };
+
+  const handleDragStart = (index: number, section: "existing" | "new") => {
+    setDraggingIndex(index);
+    setDragSection(section);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    setDragOverIndex(index);
+  };
+
+  const handleDrop = (e: React.DragEvent, toIndex: number, section: "existing" | "new") => {
+    e.preventDefault();
+    if (draggingIndex === null || dragSection !== section) {
+      setDragOverIndex(null);
+      setDraggingIndex(null);
+      setDragSection(null);
+      return;
+    }
+    if (section === "existing") {
+      reorderExisting(draggingIndex, toIndex);
+    } else {
+      reorderNew(draggingIndex, toIndex);
+    }
+    setDragOverIndex(null);
+    setDraggingIndex(null);
+    setDragSection(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragOverIndex(null);
+    setDraggingIndex(null);
+    setDragSection(null);
   };
 
   const uploadImages = async (): Promise<{ image_url: string; caption: string; sort_order: number }[]> => {
@@ -393,18 +448,57 @@ export default function GalleryForm({
                 Arrastra imágenes aquí o haz clic en "Agregar imágenes"
               </Typography>
               <Typography variant="caption" sx={{ display: 'block', mt: 1, opacity: 0.5 }}>
-                JPEG, PNG, WebP, GIF — Sin límite de cantidad
+                JPEG, PNG, WebP, GIF — Arrastra para cambiar el orden — La primera será la portada
               </Typography>
             </Box>
           )}
 
           {existingImages.length > 0 && (
             <Stack spacing={2}>
-              {existingImages.map((image) => (
-                <Paper key={image.id} elevation={0} sx={{ p: 2, border: '1px solid #eee', borderRadius: 0 }}>
+              {existingImages.map((image, index) => (
+                <Paper
+                  key={image.id}
+                  elevation={0}
+                  draggable
+                  onDragStart={() => handleDragStart(index, "existing")}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={(e) => handleDrop(e, index, "existing")}
+                  onDragEnd={handleDragEnd}
+                  sx={{
+                    p: 2,
+                    border: '1px solid #eee',
+                    borderRadius: 0,
+                    cursor: 'grab',
+                    opacity: draggingIndex === index && dragSection === "existing" ? 0.4 : 1,
+                    bgcolor: dragOverIndex === index && dragSection === "existing" ? '#f5f5f5' : 'white',
+                    transition: 'background-color 0.15s',
+                    '&:active': { cursor: 'grabbing' },
+                  }}
+                >
                   <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-                    <Box sx={{ width: 100, height: 80, flexShrink: 0, overflow: 'hidden', borderRadius: '2px' }}>
-                      <img src={image.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <DragIcon sx={{ mt: 1, opacity: 0.3 }} />
+                    <Box sx={{ position: 'relative', width: 100, height: 80, flexShrink: 0 }}>
+                      {index === 0 && (
+                        <Chip
+                          label="Portada"
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            top: -8,
+                            left: 0,
+                            zIndex: 1,
+                            height: 18,
+                            fontSize: '0.6rem',
+                            fontWeight: 900,
+                            bgcolor: '#1a1a1a',
+                            color: 'white',
+                            borderRadius: 0,
+                          }}
+                        />
+                      )}
+                      <Box sx={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '2px' }}>
+                        <img src={image.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <TextField
@@ -431,11 +525,49 @@ export default function GalleryForm({
           {imagePreviews.length > 0 && (
             <Stack spacing={2}>
               {imagePreviews.map((preview, index) => (
-                <Paper key={index} elevation={0} sx={{ p: 2, border: '1px solid #eee', borderRadius: 0 }}>
+                <Paper
+                  key={index}
+                  elevation={0}
+                  draggable
+                  onDragStart={() => handleDragStart(index, "new")}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDrop={(e) => handleDrop(e, index, "new")}
+                  onDragEnd={handleDragEnd}
+                  sx={{
+                    p: 2,
+                    border: '1px solid #eee',
+                    borderRadius: 0,
+                    cursor: 'grab',
+                    opacity: draggingIndex === index && dragSection === "new" ? 0.4 : 1,
+                    bgcolor: dragOverIndex === index && dragSection === "new" ? '#f5f5f5' : 'white',
+                    transition: 'background-color 0.15s',
+                    '&:active': { cursor: 'grabbing' },
+                  }}
+                >
                   <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
                     <DragIcon sx={{ mt: 1, opacity: 0.3 }} />
-                    <Box sx={{ width: 100, height: 80, flexShrink: 0, overflow: 'hidden', borderRadius: '2px' }}>
-                      <img src={preview.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Box sx={{ position: 'relative', width: 100, height: 80, flexShrink: 0 }}>
+                      {index === 0 && (
+                        <Chip
+                          label="Portada"
+                          size="small"
+                          sx={{
+                            position: 'absolute',
+                            top: -8,
+                            left: 0,
+                            zIndex: 1,
+                            height: 18,
+                            fontSize: '0.6rem',
+                            fontWeight: 900,
+                            bgcolor: '#1a1a1a',
+                            color: 'white',
+                            borderRadius: 0,
+                          }}
+                        />
+                      )}
+                      <Box sx={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '2px' }}>
+                        <img src={preview.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <TextField
