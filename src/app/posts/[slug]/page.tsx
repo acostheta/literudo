@@ -17,6 +17,7 @@ import {
   ArrowBack as BackIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
+import CommentSection from "@/components/comments/CommentSection";
 
 // Reutilizamos el renderizador poético pero con toques más refinados para el público
 const PublicPoeticRenderer = ({ content }: { content: any }) => {
@@ -256,7 +257,12 @@ export default function PublicPostPage({ params }: { params: Promise<{ slug: str
               </Typography>
             </Stack>
           </Box>
+
         </Stack>
+
+        <Box sx={{ width: '100%', mt: 8 }}>
+          <CommentSection postId={post.id} />
+        </Box>
       </Container>
     </Box>
   );

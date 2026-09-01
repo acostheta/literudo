@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryPost } from "@/lib/types/gallery";
 import MasonryGrid from "@/components/MasonryGrid";
+import CommentSection from "@/components/comments/CommentSection";
 
 export default function GalleryDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -148,6 +149,10 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
 
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         <MasonryGrid images={gallery.gallery_images || []} />
+      </div>
+
+      <div style={{ maxWidth: '800px', margin: '3rem auto 0' }}>
+        <CommentSection postId={gallery.id} />
       </div>
     </div>
   );
