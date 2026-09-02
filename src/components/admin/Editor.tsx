@@ -240,22 +240,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
           <LinkIcon sx={{ fontSize: 18 }} />
         </IconButton>
       </Stack>
-
-      <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Button
-          size="small"
-          startIcon={<AddPhotoAlternate sx={{ fontSize: 18 }} />}
-          sx={{ 
-            color: 'primary.main', 
-            fontSize: '0.7rem', 
-            fontWeight: 700,
-            textTransform: 'none',
-            '&:hover': { bgcolor: 'rgba(var(--mui-palette-primary-mainChannel), 0.04)' }
-          }}
-        >
-          Añadir Multimedia
-        </Button>
-      </Box>
     </Paper>
   );
 };

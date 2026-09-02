@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import PostCard from '@/components/PostCard';
 
 const SAMPLE_POSTS = [
@@ -27,6 +28,22 @@ const SAMPLE_POSTS = [
 export default function PostsPage() {
   return (
     <div className="container" style={{ padding: '4rem 0' }}>
+      <div style={{ marginBottom: '1rem' }}>
+        <Link
+          href="/"
+          style={{
+            color: 'var(--foreground-muted)',
+            textDecoration: 'none',
+            fontSize: '0.9rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          ← Inicio
+        </Link>
+      </div>
+
       <header style={{ marginBottom: '4rem' }}>
         <h1 style={{ fontSize: '3rem' }}>Explorar Entradas</h1>
         <p style={{ color: 'var(--foreground-muted)' }}>Descubre todos nuestros artículos y reflexiones.</p>

@@ -73,6 +73,22 @@ export default function GalleryListPage() {
       maxWidth: '1200px',
       margin: '0 auto'
     }}>
+      <div style={{ marginBottom: '1rem' }}>
+        <Link
+          href="/"
+          style={{
+            color: 'var(--foreground-muted)',
+            textDecoration: 'none',
+            fontSize: '0.9rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+          ← Inicio
+        </Link>
+      </div>
+
       <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
         <h1 style={{
           fontFamily: 'var(--font-playfair)',

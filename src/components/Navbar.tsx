@@ -4,10 +4,13 @@ import Link from 'next/link';
 import { useState } from 'react';
 import LoginModal from './LoginModal';
 import RegisterModal from './RegisterModal';
+import NavDrawer from './NavDrawer';
+import { Menu as MenuIcon } from '@mui/icons-material';
 
 export default function Navbar() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const openLogin = () => {
     setIsRegisterModalOpen(false);
@@ -37,20 +40,51 @@ export default function Navbar() {
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
-          <Link href="/blog" style={{
-            color: 'var(--foreground-muted)',
-            fontSize: '0.9rem',
-            fontWeight: '500'
-          }}>
-            Explorar
-          </Link>
-          <Link href="/gallery" style={{
-            color: 'var(--foreground-muted)',
-            fontSize: '0.9rem',
-            fontWeight: '500'
-          }}>
-            Galería
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <button
+              onClick={() => setDrawerOpen(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.25rem',
+                color: 'var(--foreground-muted)',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <MenuIcon />
+            </button>
+            <Link href="/" style={{
+              color: 'var(--foreground)',
+              fontSize: '1rem',
+              fontWeight: '700',
+              fontFamily: 'var(--font-lora)',
+              textDecoration: 'none',
+              letterSpacing: -0.5,
+            }}>
+              Literudo
+            </Link>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <Link href="/posts" style={{
+              color: 'var(--foreground-muted)',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              textDecoration: 'none'
+            }}>
+              Artículos
+            </Link>
+            <Link href="/gallery" style={{
+              color: 'var(--foreground-muted)',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              textDecoration: 'none'
+            }}>
+              Galería
+            </Link>
+          </div>
           
           <div style={{
             display: 'flex',
@@ -86,6 +120,8 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <LoginModal 
         isOpen={isLoginModalOpen} 

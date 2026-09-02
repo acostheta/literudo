@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { GalleryImage } from "@/lib/types/gallery";
+import { GalleryImage, GalleryEmbed } from "@/lib/types/gallery";
 import {
   Box,
   Container,
@@ -22,6 +22,7 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
   const [initialTitle, setInitialTitle] = useState("");
   const [initialDescription, setInitialDescription] = useState("");
   const [initialImages, setInitialImages] = useState<GalleryImage[]>([]);
+  const [initialEmbeds, setInitialEmbeds] = useState<GalleryEmbed[]>([]);
   const [initialStatus, setInitialStatus] = useState("borrador");
 
   useEffect(() => {
@@ -37,13 +38,21 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
         setInitialDescription(gallery.description || "");
         setInitialStatus(gallery.status);
 
-        const { data: images } = await supabase
-          .from("gallery_images")
-          .select("*")
-          .eq("gallery_post_id", id)
-          .order("sort_order");
+        const [{ data: images }, { data: embeds }] = await Promise.all([
+          supabase
+            .from("gallery_images")
+            .select("*")
+            .eq("gallery_post_id", id)
+            .order("sort_order"),
+          supabase
+            .from("gallery_embeds")
+            .select("*")
+            .eq("gallery_post_id", id)
+            .order("sort_order"),
+        ]);
 
         if (images) setInitialImages(images);
+        if (embeds) setInitialEmbeds(embeds);
       }
       setLoading(false);
     };
@@ -85,6 +94,7 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
           initialTitle={initialTitle}
           initialDescription={initialDescription}
           initialImages={initialImages}
+          initialEmbeds={initialEmbeds}
           initialStatus={initialStatus}
           submitLabel="Guardar Cambios"
         />

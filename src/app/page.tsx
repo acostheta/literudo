@@ -30,6 +30,7 @@ interface GalleryEntry {
   created_at: string;
   cover_url: string | null;
   image_count: number;
+  embed_count: number;
   type: "gallery";
 }
 
@@ -60,21 +61,40 @@ export default function Home() {
       let galleryItems: FeedItem[] = [];
       if (galleries && galleries.length > 0) {
         const postIds = galleries.map((g) => g.id);
-        const { data: images } = await supabase
-          .from("gallery_images")
-          .select("gallery_post_id, image_url, sort_order")
-          .in("gallery_post_id", postIds)
-          .order("sort_order");
+        const [{ data: images }, { data: embeds }] = await Promise.all([
+          supabase
+            .from("gallery_images")
+            .select("gallery_post_id, image_url, sort_order")
+            .in("gallery_post_id", postIds)
+            .order("sort_order"),
+          supabase
+            .from("gallery_embeds")
+            .select("gallery_post_id")
+            .in("gallery_post_id", postIds),
+        ]);
 
-        galleryItems = galleries.map((g) => {
-          const gImages = (images || []).filter((i) => i.gallery_post_id === g.id);
-          return {
-            ...g,
-            cover_url: gImages[0]?.image_url || null,
-            image_count: gImages.length,
-            type: "gallery" as const,
-          };
+        const coverMap: Record<string, string> = {};
+        const imageCountMap: Record<string, number> = {};
+        const embedCountMap: Record<string, number> = {};
+
+        images?.forEach((img) => {
+          if (!coverMap[img.gallery_post_id]) {
+            coverMap[img.gallery_post_id] = img.image_url;
+          }
+          imageCountMap[img.gallery_post_id] = (imageCountMap[img.gallery_post_id] || 0) + 1;
         });
+
+        embeds?.forEach((emb) => {
+          embedCountMap[emb.gallery_post_id] = (embedCountMap[emb.gallery_post_id] || 0) + 1;
+        });
+
+        galleryItems = galleries.map((g) => ({
+          ...g,
+          cover_url: coverMap[g.id] || null,
+          image_count: imageCountMap[g.id] || 0,
+          embed_count: embedCountMap[g.id] || 0,
+          type: "gallery" as const,
+        }));
       }
 
       const merged = [...postItems, ...galleryItems].sort(
@@ -220,7 +240,7 @@ export default function Home() {
                   }}
                 >
                   {item.type === "gallery"
-                    ? (item.description || `${item.image_count} fotografías`)
+                    ? (item.description || `${item.image_count + item.embed_count} elementos`)
                     : (item.excerpt || "Sin resumen disponible...")
                   }
                 </Typography>

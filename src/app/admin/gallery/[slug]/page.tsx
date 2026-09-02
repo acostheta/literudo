@@ -13,12 +13,18 @@ import {
   CircularProgress,
   Button,
   Tooltip,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import {
   ArrowBack as BackIcon,
   Edit as EditIcon,
+  Image as ImageIcon,
+  VideoFile as VideoIcon,
+  MusicNote as MusicIcon,
 } from "@mui/icons-material";
 import MasonryGrid from "@/components/MasonryGrid";
+import EmbedPlayer from "@/components/EmbedPlayer";
 import Link from "next/link";
 
 export default function GalleryDetailPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -26,6 +32,7 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
   const router = useRouter();
   const [gallery, setGallery] = useState<GalleryPost | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState(0);
   const supabaseRef = useRef(createClient());
 
   useEffect(() => {
@@ -43,13 +50,25 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
           .eq("id", post.author_id)
           .single();
 
-        const { data: images } = await supabaseRef.current
-          .from("gallery_images")
-          .select("*")
-          .eq("gallery_post_id", post.id)
-          .order("sort_order");
+        const [{ data: images }, { data: embeds }] = await Promise.all([
+          supabaseRef.current
+            .from("gallery_images")
+            .select("*")
+            .eq("gallery_post_id", post.id)
+            .order("sort_order"),
+          supabaseRef.current
+            .from("gallery_embeds")
+            .select("*")
+            .eq("gallery_post_id", post.id)
+            .order("sort_order"),
+        ]);
 
-        setGallery({ ...post, profiles: profile, gallery_images: images || [] });
+        setGallery({
+          ...post,
+          profiles: profile,
+          gallery_images: images || [],
+          gallery_embeds: embeds || [],
+        });
       }
       setLoading(false);
     };
@@ -73,6 +92,26 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
       </Container>
     );
   }
+
+  const images = gallery.gallery_images || [];
+  const videoEmbeds = (gallery.gallery_embeds || []).filter((e) => e.platform === "youtube");
+  const musicEmbeds = (gallery.gallery_embeds || []).filter((e) => e.platform === "soundcloud");
+
+  const hasImages = images.length > 0;
+  const hasVideos = videoEmbeds.length > 0;
+  const hasMusic = musicEmbeds.length > 0;
+
+  const tabs = [];
+  if (hasImages) tabs.push({ label: "Imágenes", icon: <ImageIcon sx={{ fontSize: 18 }} /> });
+  if (hasVideos) tabs.push({ label: "Videos", icon: <VideoIcon sx={{ fontSize: 18 }} /> });
+  if (hasMusic) tabs.push({ label: "Música", icon: <MusicIcon sx={{ fontSize: 18 }} /> });
+
+  const getTabIndex = (type: "images" | "videos" | "music") => {
+    if (type === "images") return 0;
+    if (type === "videos") return hasImages ? 1 : 0;
+    if (type === "music") return (hasImages ? 1 : 0) + (hasVideos ? 1 : 0);
+    return 0;
+  };
 
   return (
     <Box sx={{
@@ -175,8 +214,61 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
             </Typography>
           )}
 
+          {/* Pestañas */}
+          {tabs.length > 1 && (
+            <Box sx={{ width: '100%', maxWidth: 600 }}>
+              <Tabs
+                value={activeTab}
+                onChange={(_, v) => setActiveTab(v)}
+                variant="fullWidth"
+                sx={{
+                  "& .MuiTab-root": {
+                    textTransform: "none",
+                    fontWeight: 600,
+                    fontSize: "0.9rem",
+                  },
+                }}
+              >
+                {tabs.map((tab) => (
+                  <Tab key={tab.label} icon={tab.icon} iconPosition="start" label={tab.label} />
+                ))}
+              </Tabs>
+            </Box>
+          )}
+
           <Box sx={{ width: '100%', mt: 4 }}>
-            <MasonryGrid images={gallery.gallery_images || []} />
+            {/* Imágenes */}
+            {activeTab === getTabIndex("images") && hasImages && (
+              <MasonryGrid images={images} />
+            )}
+
+            {/* Videos */}
+            {activeTab === getTabIndex("videos") && hasVideos && (
+              <Box>
+                {videoEmbeds.map((embed) => (
+                  <EmbedPlayer
+                    key={embed.id}
+                    platform={embed.platform}
+                    embedUrl={embed.embed_url}
+                    caption={embed.caption}
+                  />
+                ))}
+              </Box>
+            )}
+
+            {/* Música */}
+            {activeTab === getTabIndex("music") && hasMusic && (
+              <Box>
+                {musicEmbeds.map((embed) => (
+                  <EmbedPlayer
+                    key={embed.id}
+                    platform={embed.platform}
+                    embedUrl={embed.embed_url}
+                    caption={embed.caption}
+                  />
+                ))}
+              </Box>
+            )}
           </Box>
 
           <Stack spacing={1} sx={{ alignItems: "center", mt: 10 }}>
