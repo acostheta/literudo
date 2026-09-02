@@ -64,7 +64,7 @@ export default function Home() {
         const [{ data: images }, { data: embeds }] = await Promise.all([
           supabase
             .from("gallery_images")
-            .select("gallery_post_id, image_url, sort_order")
+            .select("gallery_post_id, image_url, caption, description, sort_order")
             .in("gallery_post_id", postIds)
             .order("sort_order"),
           supabase

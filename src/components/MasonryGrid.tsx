@@ -57,7 +57,7 @@ export default function MasonryGrid({ images, onImageClick }: MasonryGridProps) 
               />
               {image.caption && (
                 <div style={{
-                  padding: '0.75rem 0.25rem',
+                  padding: '0.75rem 0.25rem 0.25rem',
                   fontFamily: '"Lora", serif',
                   fontSize: '0.9rem',
                   color: '#555',
@@ -65,6 +65,17 @@ export default function MasonryGrid({ images, onImageClick }: MasonryGridProps) 
                   lineHeight: 1.5
                 }}>
                   {image.caption}
+                </div>
+              )}
+              {image.description && (
+                <div style={{
+                  padding: '0 0.25rem 0.75rem',
+                  fontFamily: '"Lora", serif',
+                  fontSize: '0.85rem',
+                  color: '#666',
+                  lineHeight: 1.6
+                }}>
+                  {image.description}
                 </div>
               )}
             </div>

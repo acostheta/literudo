@@ -67,6 +67,7 @@ export default function EmbedListManager({
       url,
       embed_url: resolvedEmbedUrl,
       caption: null,
+      description: null,
       sort_order: embeds.length,
       created_at: new Date().toISOString(),
     };
@@ -83,6 +84,12 @@ export default function EmbedListManager({
   const handleCaptionChange = (id: string, caption: string) => {
     onChange(
       embeds.map((e) => (e.id === id ? { ...e, caption } : e))
+    );
+  };
+
+  const handleDescriptionChange = (id: string, description: string) => {
+    onChange(
+      embeds.map((e) => (e.id === id ? { ...e, description } : e))
     );
   };
 
@@ -225,6 +232,19 @@ export default function EmbedListManager({
                   sx={{
                     mt: 0.5,
                     "& .MuiInput-input": { fontSize: "0.75rem", fontStyle: "italic" },
+                  }}
+                />
+                <TextField
+                  size="small"
+                  multiline
+                  rows={2}
+                  placeholder="Proceso creativo, inspiración..."
+                  value={embed.description || ""}
+                  onChange={(e) => handleDescriptionChange(embed.id, e.target.value)}
+                  variant="standard"
+                  sx={{
+                    mt: 0.5,
+                    "& .MuiInput-input": { fontSize: "0.75rem", color: "#666" },
                   }}
                 />
               </Box>

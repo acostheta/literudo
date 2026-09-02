@@ -31,7 +31,7 @@ export default function GalleryListPage() {
         const postIds = posts.map(p => p.id);
         const { data: images } = await supabaseRef.current
           .from("gallery_images")
-          .select("gallery_post_id, image_url")
+          .select("gallery_post_id, image_url, caption, description")
           .in("gallery_post_id", postIds);
 
         const coverMap: Record<string, string> = {};

@@ -6,9 +6,10 @@ interface EmbedPlayerProps {
   platform: string;
   embedUrl: string;
   caption?: string | null;
+  description?: string | null;
 }
 
-export default function EmbedPlayer({ platform, embedUrl, caption }: EmbedPlayerProps) {
+export default function EmbedPlayer({ platform, embedUrl, caption, description }: EmbedPlayerProps) {
   const platformColor = platform === "youtube" ? "#FF0000" : "#FF5500";
   const platformLabel = platform === "youtube" ? "YouTube" : "SoundCloud";
 
@@ -68,6 +69,20 @@ export default function EmbedPlayer({ platform, embedUrl, caption }: EmbedPlayer
             {caption || platformLabel}
           </Typography>
         </Box>
+      )}
+
+      {description && (
+        <Typography
+          sx={{
+            mt: 1.5,
+            fontSize: "0.9rem",
+            fontFamily: '"Lora", serif',
+            color: "#555",
+            lineHeight: 1.6,
+          }}
+        >
+          {description}
+        </Typography>
       )}
     </Box>
   );

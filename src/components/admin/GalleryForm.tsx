@@ -32,6 +32,7 @@ interface ImagePreview {
   file: File;
   preview: string;
   caption: string;
+  description: string;
   uploading: boolean;
   uploaded: boolean;
   url?: string;
@@ -136,6 +137,7 @@ export default function GalleryForm({
       file,
       preview: URL.createObjectURL(file),
       caption: "",
+      description: "",
       uploading: false,
       uploaded: false,
     }));
@@ -168,6 +170,19 @@ export default function GalleryForm({
     await supabase.from("gallery_images").update({ caption }).eq("id", image.id);
     setExistingImages((prev) =>
       prev.map((img) => (img.id === image.id ? { ...img, caption } : img))
+    );
+  };
+
+  const updateDescription = (index: number, description: string) => {
+    setImagePreviews((prev) =>
+      prev.map((img, i) => (i === index ? { ...img, description } : img))
+    );
+  };
+
+  const updateExistingDescription = async (image: GalleryImage, description: string) => {
+    await supabase.from("gallery_images").update({ description }).eq("id", image.id);
+    setExistingImages((prev) =>
+      prev.map((img) => (img.id === image.id ? { ...img, description } : img))
     );
   };
 
@@ -223,8 +238,8 @@ export default function GalleryForm({
     setDragSection(null);
   };
 
-  const uploadImages = async (): Promise<{ image_url: string; caption: string; sort_order: number }[]> => {
-    const uploaded: { image_url: string; caption: string; sort_order: number }[] = [];
+  const uploadImages = async (): Promise<{ image_url: string; caption: string; description: string; sort_order: number }[]> => {
+    const uploaded: { image_url: string; caption: string; description: string; sort_order: number }[] = [];
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return uploaded;
 
@@ -234,6 +249,7 @@ export default function GalleryForm({
         uploaded.push({
           image_url: img.url,
           caption: img.caption,
+          description: img.description,
           sort_order: existingImages.length + i,
         });
         continue;
@@ -264,6 +280,7 @@ export default function GalleryForm({
       uploaded.push({
         image_url: publicUrl,
         caption: img.caption,
+        description: img.description,
         sort_order: existingImages.length + i,
       });
 
@@ -338,6 +355,7 @@ export default function GalleryForm({
         ...existingImages.map((img, i) => ({
           image_url: img.image_url,
           caption: img.caption || "",
+          description: img.description || "",
           sort_order: i,
         })),
         ...uploadedImages,
@@ -348,6 +366,7 @@ export default function GalleryForm({
           gallery_post_id: postId,
           image_url: img.image_url,
           caption: img.caption || null,
+          description: img.description || null,
           sort_order: img.sort_order,
         }));
 
@@ -583,6 +602,19 @@ export default function GalleryForm({
                             input: { disableUnderline: true, sx: { fontSize: '0.9rem', fontStyle: 'italic' } }
                           }}
                         />
+                        <TextField
+                          fullWidth
+                          size="small"
+                          multiline
+                          rows={2}
+                          variant="standard"
+                          placeholder="Proceso creativo, inspiración..."
+                          value={image.description || ""}
+                          onChange={(e) => updateExistingDescription(image, e.target.value)}
+                          slotProps={{
+                            input: { disableUnderline: true, sx: { fontSize: '0.8rem', color: '#666', mt: 1 } }
+                          }}
+                        />
                       </Box>
                       <IconButton size="small" color="error" onClick={() => removeExistingImage(image)}>
                         <DeleteIcon fontSize="small" />
@@ -650,6 +682,19 @@ export default function GalleryForm({
                           onChange={(e) => updateCaption(index, e.target.value)}
                           slotProps={{
                             input: { disableUnderline: true, sx: { fontSize: '0.9rem', fontStyle: 'italic' } }
+                          }}
+                        />
+                        <TextField
+                          fullWidth
+                          size="small"
+                          multiline
+                          rows={2}
+                          variant="standard"
+                          placeholder="Proceso creativo, inspiración..."
+                          value={preview.description}
+                          onChange={(e) => updateDescription(index, e.target.value)}
+                          slotProps={{
+                            input: { disableUnderline: true, sx: { fontSize: '0.8rem', color: '#666', mt: 1 } }
                           }}
                         />
                         {preview.uploading && (

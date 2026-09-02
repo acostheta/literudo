@@ -17,6 +17,7 @@ export interface GalleryImage {
   gallery_post_id: string;
   image_url: string;
   caption: string | null;
+  description: string | null;
   sort_order: number;
   created_at: string;
 }
@@ -28,6 +29,7 @@ export interface GalleryEmbed {
   url: string;
   embed_url: string;
   caption: string | null;
+  description: string | null;
   sort_order: number;
   created_at: string;
 }
