@@ -81,12 +81,12 @@ export default function NewPostPage() {
     <Box sx={{ 
       minHeight: '100vh', 
       bgcolor: '#fcfcfb', // Un blanco roto más cálido
-      py: 4 
+      py: { xs: 2, md: 4 } 
     }}>
       <Container maxWidth="md">
         {/* Cabecera Minimalista */}
-        <Box sx={{ mb: 8 }}>
-          <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
+        <Box sx={{ mb: { xs: 4, md: 8 } }}>
+          <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ justifyContent: "space-between", alignItems: { xs: 'stretch', sm: "center" }, gap: 2 }}>
             <Box>
               <Breadcrumbs sx={{ mb: 1.5, '& .MuiBreadcrumbs-li': { fontSize: '0.7rem', letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.5 } }}>
                 <MuiLink component={Link} href="/admin/posts" underline="hover" color="inherit">
@@ -98,13 +98,14 @@ export default function NewPostPage() {
                 fontFamily: '"Lora", serif', 
                 fontWeight: 800, 
                 color: '#1a1a1a',
-                letterSpacing: -1
+                letterSpacing: -1,
+                fontSize: { xs: '1.8rem', md: '3rem' }
               }}>
                 Crear contenido
               </Typography>
             </Box>
             
-            <Stack direction="row" spacing={3} sx={{ alignItems: "center" }}>
+            <Stack direction="row" spacing={{ xs: 1.5, md: 3 }} sx={{ alignItems: "center", flexWrap: 'wrap' }}>
               <FormControl size="small" variant="standard">
                 <Select
                   value={status}
@@ -128,6 +129,7 @@ export default function NewPostPage() {
                   color: 'text.secondary', 
                   fontSize: '0.9rem', 
                   textDecoration: 'none',
+                  display: { xs: 'none', sm: 'inline' },
                   '&:hover': { color: 'error.main' } 
                 }}
               >
@@ -140,7 +142,7 @@ export default function NewPostPage() {
                 disabled={loading}
                 sx={{ 
                   borderRadius: 0, 
-                  px: 4, 
+                  px: { xs: 2, md: 4 }, 
                   py: 1.2,
                   bgcolor: '#1a1a1a',
                   boxShadow: 'none',

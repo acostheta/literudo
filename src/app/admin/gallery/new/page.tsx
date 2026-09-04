@@ -12,9 +12,9 @@ import Link from "next/link";
 
 export default function NewGalleryPage() {
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#fcfcfb', py: 4 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#fcfcfb', py: { xs: 2, md: 4 } }}>
       <Container maxWidth="md">
-        <Box sx={{ mb: 6 }}>
+        <Box sx={{ mb: { xs: 3, md: 6 } }}>
           <Breadcrumbs sx={{ mb: 1.5, '& .MuiBreadcrumbs-li': { fontSize: '0.7rem', letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.5 } }}>
             <MuiLink component={Link} href="/admin/gallery" underline="hover" color="inherit">
               Galerías
@@ -25,7 +25,8 @@ export default function NewGalleryPage() {
             fontFamily: '"Lora", serif',
             fontWeight: 800,
             color: '#1a1a1a',
-            letterSpacing: -1
+            letterSpacing: -1,
+            fontSize: { xs: '1.8rem', md: '3rem' }
           }}>
             Crear galería
           </Typography>

@@ -66,7 +66,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         display: "flex",
         flexWrap: "wrap",
         alignItems: "center",
-        px: 2,
+        px: { xs: 1, md: 2 },
         py: 1,
         borderBottom: "1px solid #f0f0f0",
         position: "sticky",
@@ -79,7 +79,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       }}
     >
       {/* Marca Discreta */}
-      <Box sx={{ mr: 2, display: 'flex', alignItems: 'center' }}>
+      <Box sx={{ mr: { xs: 1, md: 2 }, display: 'flex', alignItems: 'center' }}>
         <Typography sx={{ 
           fontSize: '0.65rem', 
           fontWeight: 900, 
@@ -90,13 +90,14 @@ const MenuBar = ({ editor }: { editor: any }) => {
           borderColor: 'primary.main',
           px: 1,
           py: 0.2,
-          borderRadius: 0.5
+          borderRadius: 0.5,
+          display: { xs: 'none', sm: 'block' }
         }}>
           Literudo
         </Typography>
       </Box>
 
-      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mr: 1, opacity: 0.5 }} />
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mr: 1, opacity: 0.5, display: { xs: 'none', sm: 'block' } }} />
 
       {/* Historial */}
       <Stack direction="row" spacing={0.2}>
@@ -121,12 +122,12 @@ const MenuBar = ({ editor }: { editor: any }) => {
         sx={{ 
           color: editor.isActive('heading') ? 'primary.main' : '#444', 
           borderRadius: 1, 
-          px: 1.5,
+          px: { xs: 1, md: 1.5 },
           bgcolor: editor.isActive('heading') ? 'rgba(var(--mui-palette-primary-mainChannel), 0.08)' : 'transparent',
           '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
         }}
       >
-        <Typography sx={{ fontSize: '0.75rem', fontWeight: 800, mr: 0.5 }}>
+        <Typography sx={{ fontSize: { xs: '0.7rem', md: '0.75rem' }, fontWeight: 800, mr: 0.5 }}>
           {editor.isActive('heading', { level: 1 }) ? 'Título Principal' : editor.isActive('heading', { level: 2 }) ? 'Subtítulo' : 'Cuerpo'}
         </Typography>
         <KeyboardArrowDown sx={{ fontSize: 14 }} />
@@ -159,7 +160,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           { icon: <FormatBold />, action: () => editor.chain().focus().toggleBold().run(), active: 'bold', label: 'Negrita' },
           { icon: <FormatItalic />, action: () => editor.chain().focus().toggleItalic().run(), active: 'italic', label: 'Cursiva' },
           { icon: <FormatUnderlined />, action: () => editor.chain().focus().toggleUnderline().run(), active: 'underline', label: 'Subrayado' },
-          { icon: <StrikethroughS />, action: () => editor.chain().focus().toggleStrike().run(), active: 'strike', label: 'Tachado' },
+          { icon: <StrikethroughS />, action: () => editor.chain().focus().toggleStrike().run(), active: 'strike', label: 'Tachado', hideOnMobile: true },
         ].map((btn, i) => (
           <Tooltip key={i} title={btn.label}>
             <IconButton 
@@ -168,7 +169,8 @@ const MenuBar = ({ editor }: { editor: any }) => {
               sx={{ 
                 color: editor.isActive(btn.active) ? 'primary.main' : '#444',
                 bgcolor: editor.isActive(btn.active) ? 'rgba(var(--mui-palette-primary-mainChannel), 0.08)' : 'transparent',
-                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' },
+                display: { xs: (btn as any).hideOnMobile ? 'none' : 'inline-flex', md: 'inline-flex' }
               }}
             >
               {btn.icon}
@@ -187,21 +189,21 @@ const MenuBar = ({ editor }: { editor: any }) => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Cita Literaria">
-          <IconButton size="small" onClick={() => editor.chain().focus().toggleBlockquote().run()} sx={{ color: editor.isActive('blockquote') ? 'primary.main' : '#444' }}>
+          <IconButton size="small" onClick={() => editor.chain().focus().toggleBlockquote().run()} sx={{ color: editor.isActive('blockquote') ? 'primary.main' : '#444', display: { xs: 'none', sm: 'inline-flex' } }}>
             <FormatQuote sx={{ fontSize: 20 }} />
           </IconButton>
         </Tooltip>
         <Tooltip title="Bloque de Código">
-          <IconButton size="small" onClick={() => editor.chain().focus().toggleCodeBlock().run()} sx={{ color: editor.isActive('codeBlock') ? 'primary.main' : '#444' }}>
+          <IconButton size="small" onClick={() => editor.chain().focus().toggleCodeBlock().run()} sx={{ color: editor.isActive('codeBlock') ? 'primary.main' : '#444', display: { xs: 'none', sm: 'inline-flex' } }}>
             <Code sx={{ fontSize: 20 }} />
           </IconButton>
         </Tooltip>
       </Stack>
 
-      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5 }} />
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5, display: { xs: 'none', sm: 'block' } }} />
 
       {/* Alineación */}
-      <Stack direction="row" spacing={0.2}>
+      <Stack direction="row" spacing={0.2} sx={{ display: { xs: 'none', sm: 'flex' } }}>
         {[
           { icon: <FormatAlignLeft />, action: () => editor.chain().focus().setTextAlign('left').run(), align: 'left' },
           { icon: <FormatAlignCenter />, action: () => editor.chain().focus().setTextAlign('center').run(), align: 'center' },
@@ -218,10 +220,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
         ))}
       </Stack>
 
-      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5 }} />
+      <Divider orientation="vertical" flexItem sx={{ height: 20, my: 'auto', mx: 1, opacity: 0.5, display: { xs: 'none', sm: 'block' } }} />
 
       {/* Extras */}
-      <Stack direction="row" spacing={0.2}>
+      <Stack direction="row" spacing={0.2} sx={{ display: { xs: 'none', sm: 'flex' } }}>
         <IconButton 
           size="small" 
           onClick={() => editor.chain().focus().toggleHighlight().run()}
@@ -291,7 +293,7 @@ export default function Editor({ content, onChange }: EditorProps) {
       
       <Box
         sx={{
-          p: 4,
+          p: { xs: 2, md: 4 },
           '& .literudo-editor': {
             fontFamily: '"Lora", serif',
             fontSize: '1.2rem',

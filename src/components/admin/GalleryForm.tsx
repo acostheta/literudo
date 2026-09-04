@@ -487,10 +487,12 @@ export default function GalleryForm({
         <Tabs
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
           sx={{
             mb: 3,
             borderBottom: "1px solid #eee",
-            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "0.9rem" },
+            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: { xs: '0.8rem', md: '0.9rem' }, minWidth: { xs: 0, md: 'auto' } },
           }}
         >
           <Tab icon={<ImageIcon />} iconPosition="start" label="Imágenes" />
@@ -501,7 +503,7 @@ export default function GalleryForm({
         {/* Pestaña de Imágenes */}
         {activeTab === 0 && (
           <Stack spacing={3}>
-            <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ justifyContent: "space-between", alignItems: { xs: 'stretch', sm: "center" }, gap: 1 }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', fontFamily: '"Lora", serif' }}>
                 Imágenes
               </Typography>
@@ -510,7 +512,7 @@ export default function GalleryForm({
                 size="small"
                 startIcon={<UploadIcon />}
                 onClick={() => fileInputRef.current?.click()}
-                sx={{ borderRadius: 0, textTransform: 'none' }}
+                sx={{ borderRadius: 0, textTransform: 'none', width: { xs: '100%', sm: 'auto' } }}
               >
                 Agregar imágenes
               </Button>
@@ -565,30 +567,35 @@ export default function GalleryForm({
                       '&:active': { cursor: 'grabbing' },
                     }}
                   >
-                    <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-                      <DragIcon sx={{ mt: 1, opacity: 0.3 }} />
-                      <Box sx={{ position: 'relative', width: 100, height: 80, flexShrink: 0 }}>
-                        {index === 0 && (
-                          <Chip
-                            label="Portada"
-                            size="small"
-                            sx={{
-                              position: 'absolute',
-                              top: -8,
-                              left: 0,
-                              zIndex: 1,
-                              height: 18,
-                              fontSize: '0.6rem',
-                              fontWeight: 900,
-                              bgcolor: '#1a1a1a',
-                              color: 'white',
-                              borderRadius: 0,
-                            }}
-                          />
-                        )}
-                        <Box sx={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '2px' }}>
-                          <img src={image.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ alignItems: { xs: 'stretch', sm: "flex-start" } }}>
+                      <DragIcon sx={{ mt: 1, opacity: 0.3, display: { xs: 'none', sm: 'block' } }} />
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                        <Box sx={{ position: 'relative', width: 100, height: 80, flexShrink: 0 }}>
+                          {index === 0 && (
+                            <Chip
+                              label="Portada"
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: -8,
+                                left: 0,
+                                zIndex: 1,
+                                height: 18,
+                                fontSize: '0.6rem',
+                                fontWeight: 900,
+                                bgcolor: '#1a1a1a',
+                                color: 'white',
+                                borderRadius: 0,
+                              }}
+                            />
+                          )}
+                          <Box sx={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '2px' }}>
+                            <img src={image.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </Box>
                         </Box>
+                        <IconButton size="small" color="error" onClick={() => removeExistingImage(image)} sx={{ display: { sm: 'none' } }}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </Box>
                       <Box sx={{ flex: 1 }}>
                         <TextField
@@ -616,7 +623,7 @@ export default function GalleryForm({
                           }}
                         />
                       </Box>
-                      <IconButton size="small" color="error" onClick={() => removeExistingImage(image)}>
+                      <IconButton size="small" color="error" onClick={() => removeExistingImage(image)} sx={{ display: { xs: 'none', sm: 'inline-flex' } }}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Stack>
@@ -647,30 +654,41 @@ export default function GalleryForm({
                       '&:active': { cursor: 'grabbing' },
                     }}
                   >
-                    <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-                      <DragIcon sx={{ mt: 1, opacity: 0.3 }} />
-                      <Box sx={{ position: 'relative', width: 100, height: 80, flexShrink: 0 }}>
-                        {index === 0 && (
-                          <Chip
-                            label="Portada"
-                            size="small"
-                            sx={{
-                              position: 'absolute',
-                              top: -8,
-                              left: 0,
-                              zIndex: 1,
-                              height: 18,
-                              fontSize: '0.6rem',
-                              fontWeight: 900,
-                              bgcolor: '#1a1a1a',
-                              color: 'white',
-                              borderRadius: 0,
-                            }}
-                          />
-                        )}
-                        <Box sx={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '2px' }}>
-                          <img src={preview.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ alignItems: { xs: 'stretch', sm: "flex-start" } }}>
+                      <DragIcon sx={{ mt: 1, opacity: 0.3, display: { xs: 'none', sm: 'block' } }} />
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                        <Box sx={{ position: 'relative', width: 100, height: 80, flexShrink: 0 }}>
+                          {index === 0 && (
+                            <Chip
+                              label="Portada"
+                              size="small"
+                              sx={{
+                                position: 'absolute',
+                                top: -8,
+                                left: 0,
+                                zIndex: 1,
+                                height: 18,
+                                fontSize: '0.6rem',
+                                fontWeight: 900,
+                                bgcolor: '#1a1a1a',
+                                color: 'white',
+                                borderRadius: 0,
+                              }}
+                            />
+                          )}
+                          <Box sx={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: '2px' }}>
+                            <img src={preview.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </Box>
                         </Box>
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => removeNewImage(index)}
+                          disabled={preview.uploading}
+                          sx={{ display: { sm: 'none' } }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
                       </Box>
                       <Box sx={{ flex: 1 }}>
                         <TextField
@@ -712,6 +730,7 @@ export default function GalleryForm({
                         color="error"
                         onClick={() => removeNewImage(index)}
                         disabled={preview.uploading}
+                        sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
                       >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
@@ -742,7 +761,7 @@ export default function GalleryForm({
         )}
       </Paper>
 
-      <Stack direction="row" sx={{ justifyContent: "flex-end" }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ justifyContent: { xs: 'stretch', sm: "flex-end" } }}>
         <Button
           variant="contained"
           startIcon={loading ? <CircularProgress size={16} color="inherit" /> : undefined}
@@ -750,10 +769,11 @@ export default function GalleryForm({
           disabled={loading || uploadingCount > 0}
           sx={{
             borderRadius: 0,
-            px: 6,
+            px: { xs: 3, md: 6 },
             py: 1.5,
             bgcolor: '#1a1a1a',
             fontWeight: 'bold',
+            width: { xs: '100%', sm: 'auto' },
             '&:hover': { bgcolor: '#000' }
           }}
         >

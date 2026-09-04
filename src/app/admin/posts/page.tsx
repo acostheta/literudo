@@ -92,12 +92,12 @@ export default function PostsPage() {
 
   return (
     <Box>
-      <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ justifyContent: "space-between", alignItems: { xs: 'stretch', sm: "center" }, gap: 2, mb: 4 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1, fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
             Gestión de Artículos
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>
             Escribe, edita y publica historias para la comunidad Literudo.
           </Typography>
         </Box>
@@ -107,13 +107,14 @@ export default function PostsPage() {
           startIcon={<AddIcon />}
           component={Link}
           href="/admin/posts/new"
-          sx={{ 
-            borderRadius: 0, 
-            px: 2, 
-            py: 1, 
-            fontSize: '0.75rem', 
+          sx={{
+            borderRadius: 0,
+            px: 2,
+            py: 1,
+            fontSize: '0.75rem',
             fontWeight: 'bold',
             bgcolor: '#1a1a1a',
+            alignSelf: { xs: 'stretch', sm: 'auto' },
             '&:hover': { bgcolor: '#000' }
           }}
         >
@@ -121,84 +122,152 @@ export default function PostsPage() {
         </Button>
       </Stack>
 
-      <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0, border: "1px solid #eee" }}>
-        <Table sx={{ tableLayout: 'fixed' }}>
-          <TableHead sx={{ bgcolor: "#f9f9f9" }}>
-            <TableRow>
-              <TableCell sx={{ fontWeight: "bold", width: "40%" }}>Título</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "20%" }}>Autor</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Estado</TableCell>
-              <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Fecha</TableCell>
-              <TableCell align="right" sx={{ fontWeight: "bold", width: "10%" }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {posts.length === 0 ? (
+      {/* Desktop Table */}
+      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+        <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0, border: "1px solid #eee" }}>
+          <Table sx={{ tableLayout: 'fixed' }}>
+            <TableHead sx={{ bgcolor: "#f9f9f9" }}>
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
-                  <Typography color="text.secondary">No hay artículos escritos todavía.</Typography>
-                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "40%" }}>Título</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "20%" }}>Autor</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Estado</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Fecha</TableCell>
+                <TableCell align="right" sx={{ fontWeight: "bold", width: "10%" }}>Acciones</TableCell>
               </TableRow>
-            ) : (
-              posts.map((post) => (
-                <TableRow 
-                  key={post.id} 
-                  hover 
-                  onClick={() => router.push(`/admin/posts/${post.slug}`)}
-                  sx={{ cursor: 'pointer' }}
-                >
-                  <TableCell>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>{post.title}</Typography>
-                    <Typography variant="caption" color="text.secondary">/{post.slug}</Typography>
-                  </TableCell>
-                  <TableCell>{post.profiles?.name || "Desconocido"}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
-                    <Tooltip title="Haz clic para cambiar el estatus">
-                      <Chip
-                        label={post.status === "publicado" ? "Publicado" : "Borrador"}
-                        size="small"
-                        color={post.status === "publicado" ? "success" : "default"}
-                        onClick={async () => {
-                          const newStatus = post.status === "publicado" ? "borrador" : "publicado";
-                          const { error } = await supabase
-                            .from("posts")
-                            .update({ status: newStatus })
-                            .eq("id", post.id);
-                          
-                          if (error) alert("Error: " + error.message);
-                          else fetchPosts(); // Refrescamos la lista
-                        }}
-                        sx={{ 
-                          borderRadius: 0, 
-                          fontWeight: "bold", 
-                          cursor: 'pointer',
-                          '&:hover': { opacity: 0.8 }
-                        }}
-                      />
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(post.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell align="right" onClick={(e) => e.stopPropagation()}>
-                    <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
-                      <IconButton size="small" component={Link} href={`/admin/posts/${post.slug}`}>
-                        <ViewIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" component={Link} href={`/admin/posts/edit/${post.id}`}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton size="small" color="error" onClick={() => handleDelete(post.id)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Stack>
+            </TableHead>
+            <TableBody>
+              {posts.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 10 }}>
+                    <Typography color="text.secondary">No hay artículos escritos todavía.</Typography>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ) : (
+                posts.map((post) => (
+                  <TableRow
+                    key={post.id}
+                    hover
+                    onClick={() => router.push(`/admin/posts/${post.slug}`)}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{post.title}</Typography>
+                      <Typography variant="caption" color="text.secondary">/{post.slug}</Typography>
+                    </TableCell>
+                    <TableCell>{post.profiles?.name || "Desconocido"}</TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Tooltip title="Haz clic para cambiar el estatus">
+                        <Chip
+                          label={post.status === "publicado" ? "Publicado" : "Borrador"}
+                          size="small"
+                          color={post.status === "publicado" ? "success" : "default"}
+                          onClick={async () => {
+                            const newStatus = post.status === "publicado" ? "borrador" : "publicado";
+                            const { error } = await supabase
+                              .from("posts")
+                              .update({ status: newStatus })
+                              .eq("id", post.id);
+
+                            if (error) alert("Error: " + error.message);
+                            else fetchPosts();
+                          }}
+                          sx={{
+                            borderRadius: 0,
+                            fontWeight: "bold",
+                            cursor: 'pointer',
+                            '&:hover': { opacity: 0.8 }
+                          }}
+                        />
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(post.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell align="right" onClick={(e) => e.stopPropagation()}>
+                      <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
+                        <IconButton size="small" component={Link} href={`/admin/posts/${post.slug}`}>
+                          <ViewIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" component={Link} href={`/admin/posts/edit/${post.id}`}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton size="small" color="error" onClick={() => handleDelete(post.id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+
+      {/* Mobile Cards */}
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        {posts.length === 0 ? (
+          <Paper elevation={0} sx={{ p: 4, borderRadius: 0, border: "1px solid #eee", textAlign: 'center' }}>
+            <Typography color="text.secondary">No hay artículos escritos todavía.</Typography>
+          </Paper>
+        ) : (
+          <Stack spacing={1.5}>
+            {posts.map((post) => (
+              <Paper
+                key={post.id}
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  border: "1px solid #eee",
+                  cursor: 'pointer',
+                  '&:hover': { bgcolor: '#f9f9f9' },
+                }}
+                onClick={() => router.push(`/admin/posts/${post.slug}`)}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{post.title}</Typography>
+                    <Typography variant="caption" color="text.secondary">/{post.slug}</Typography>
+                  </Box>
+                  <Chip
+                    label={post.status === "publicado" ? "Publicado" : "Borrador"}
+                    size="small"
+                    color={post.status === "publicado" ? "success" : "default"}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const newStatus = post.status === "publicado" ? "borrador" : "publicado";
+                      const { error } = await supabase
+                        .from("posts")
+                        .update({ status: newStatus })
+                        .eq("id", post.id);
+                      if (error) alert("Error: " + error.message);
+                      else fetchPosts();
+                    }}
+                    sx={{ borderRadius: 0, fontWeight: "bold", cursor: 'pointer', flexShrink: 0, ml: 1 }}
+                  />
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {post.profiles?.name || "Desconocido"} · {new Date(post.created_at).toLocaleDateString()}
+                  </Typography>
+                  <Stack direction="row" spacing={0.5} onClick={(e) => e.stopPropagation()}>
+                    <IconButton size="small" component={Link} href={`/admin/posts/${post.slug}`}>
+                      <ViewIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" component={Link} href={`/admin/posts/edit/${post.id}`}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => handleDelete(post.id)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                </Box>
+              </Paper>
+            ))}
+          </Stack>
+        )}
+      </Box>
     </Box>
   );
 }

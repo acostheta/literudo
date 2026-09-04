@@ -123,11 +123,11 @@ export default function DashboardPage() {
   );
 
   return (
-    <Box sx={{ py: 2 }}>
-      <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, letterSpacing: -1 }}>
+    <Box sx={{ py: { xs: 1, md: 2 } }}>
+      <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, letterSpacing: -1, fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
         Dashboard Administrativo
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 6 }}>
+      <Typography variant="body1" color="text.secondary" sx={{ mb: { xs: 3, md: 6 }, display: { xs: 'none', sm: 'block' } }}>
         Bienvenido al centro de control de Literudo. Aquí tienes el pulso de la comunidad.
       </Typography>
 
