@@ -148,7 +148,7 @@ export default function Navbar() {
                     fontWeight: 600,
                   }}
                 >
-                  Agrupación Estudiantil
+                  Online
                 </span>
               </div>
             </Link>
@@ -214,15 +214,14 @@ export default function Navbar() {
                     alignItems: "center",
                     gap: "0.35rem",
                     padding: "0.45rem 1rem",
-                    background: "var(--primary)",
-                    color: "#fcf8f2",
+                    background: "var(--primary-faint)",
+                    color: "var(--primary)",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
                     fontFamily: "var(--font-sans)",
                     fontWeight: 600,
                     textDecoration: "none",
-                    border: "1px solid #551518",
-                    boxShadow: "0 2px 6px rgba(107, 29, 34, 0.2)",
+                    border: "1px solid rgba(107, 29, 34, 0.3)",
                   }}
                 >
                   <AdminPanelSettings sx={{ fontSize: 17 }} />
@@ -259,15 +258,14 @@ export default function Navbar() {
                     display: "inline-flex",
                     alignItems: "center",
                     padding: "0.45rem 1rem",
-                    background: "var(--primary)",
-                    color: "#fcf8f2",
+                    background: "var(--primary-faint)",
+                    color: "var(--primary)",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
                     fontFamily: "var(--font-sans)",
                     fontWeight: 600,
                     textDecoration: "none",
-                    border: "1px solid #551518",
-                    boxShadow: "0 2px 6px rgba(107, 29, 34, 0.2)",
+                    border: "1px solid rgba(107, 29, 34, 0.3)",
                     transition: "all 0.2s",
                   }}
                 >

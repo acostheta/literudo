@@ -13,13 +13,11 @@ import {
   Stack,
   CircularProgress,
   Button,
-  Chip,
 } from "@mui/material";
 import {
   AutoStories,
   PhotoCamera,
   ArrowForward,
-  BookmarkBorder,
 } from "@mui/icons-material";
 
 interface Post {
@@ -50,20 +48,6 @@ interface GalleryEntry {
 }
 
 type FeedItem = Post | GalleryEntry;
-
-// Filete doble con ornamento entre tomos; Stack lo inserta entre hijos,
-// así que no hay índices ni condicionales en el listado.
-const EntrySeparator = () => (
-  <Box sx={{ display: "flex", alignItems: "center", gap: 2.5, py: 0.5 }}>
-    <Box sx={{ flex: 1, height: "1px", background: "var(--border)" }} />
-    <Box sx={{ flex: 1, height: "1px", background: "var(--border-light)", mt: "3px" }} />
-    <Typography sx={{ color: "var(--foreground-faint)", fontSize: "1rem", lineHeight: 1 }}>
-      ❦
-    </Typography>
-    <Box sx={{ flex: 1, height: "1px", background: "var(--border-light)", mt: "3px" }} />
-    <Box sx={{ flex: 1, height: "1px", background: "var(--border)" }} />
-  </Box>
-);
 
 // Los conteos de la portada vienen en dos llamadas (una por tipo), no una por entrada
 async function fetchEngagement(
@@ -130,7 +114,6 @@ async function fetchEngagement(
 
 export default function Home() {
   const [items, setItems] = useState<FeedItem[]>([]);
-  const [filter, setFilter] = useState<"all" | "posts" | "gallery">("all");
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
@@ -223,12 +206,6 @@ export default function Home() {
     fetchFeed();
   }, []);
 
-  const filteredItems = items.filter((item) => {
-    if (filter === "posts") return item.type === "post";
-    if (filter === "gallery") return item.type === "gallery";
-    return true;
-  });
-
   return (
     <Box sx={{ bgcolor: "var(--background)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
@@ -296,65 +273,6 @@ export default function Home() {
           >
             Artículos, poesía, ensayos y galería visual de la comunidad de la Universidad de Oriente.
           </Typography>
-
-          {/* Filtros de Estantería / Tomos */}
-          <Stack
-            direction="row"
-            spacing={1.5}
-            sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1 }}
-          >
-            <Chip
-              icon={<BookmarkBorder sx={{ fontSize: "1rem !important" }} />}
-              label="Todo"
-              onClick={() => setFilter("all")}
-              variant={filter === "all" ? "filled" : "outlined"}
-              sx={{
-                bgcolor: filter === "all" ? "var(--primary)" : "var(--background-card)",
-                color: filter === "all" ? "#fcf8f2" : "var(--foreground-muted)",
-                borderColor: "var(--border)",
-                fontFamily: "var(--font-sans)",
-                fontWeight: 600,
-                fontSize: "0.82rem",
-                "&:hover": {
-                  bgcolor: filter === "all" ? "var(--primary-hover)" : "var(--background-parchment)",
-                },
-              }}
-            />
-            <Chip
-              icon={<AutoStories sx={{ fontSize: "1rem !important" }} />}
-              label="Artículos"
-              onClick={() => setFilter("posts")}
-              variant={filter === "posts" ? "filled" : "outlined"}
-              sx={{
-                bgcolor: filter === "posts" ? "var(--primary)" : "var(--background-card)",
-                color: filter === "posts" ? "#fcf8f2" : "var(--foreground-muted)",
-                borderColor: "var(--border)",
-                fontFamily: "var(--font-sans)",
-                fontWeight: 600,
-                fontSize: "0.82rem",
-                "&:hover": {
-                  bgcolor: filter === "posts" ? "var(--primary-hover)" : "var(--background-parchment)",
-                },
-              }}
-            />
-            <Chip
-              icon={<PhotoCamera sx={{ fontSize: "1rem !important" }} />}
-              label="Galería"
-              onClick={() => setFilter("gallery")}
-              variant={filter === "gallery" ? "filled" : "outlined"}
-              sx={{
-                bgcolor: filter === "gallery" ? "var(--primary)" : "var(--background-card)",
-                color: filter === "gallery" ? "#fcf8f2" : "var(--foreground-muted)",
-                borderColor: "var(--border)",
-                fontFamily: "var(--font-sans)",
-                fontWeight: 600,
-                fontSize: "0.82rem",
-                "&:hover": {
-                  bgcolor: filter === "gallery" ? "var(--primary-hover)" : "var(--background-parchment)",
-                },
-              }}
-            />
-          </Stack>
         </Container>
       </Box>
 
@@ -367,7 +285,7 @@ export default function Home() {
               Cargando publicaciones...
             </Typography>
           </Box>
-        ) : filteredItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <Box
             sx={{
               textAlign: "center",
@@ -395,17 +313,18 @@ export default function Home() {
             </Button>
           </Box>
         ) : (
-          <Stack divider={<EntrySeparator />} spacing={{ xs: 7, md: 9 }}>
-            {filteredItems.map((item) => (
+          <Stack spacing={{ xs: 3, md: 4 }}>
+            {items.map((item) => (
               <Box
                 key={item.id}
                 component="article"
                 className="book-card"
                 sx={{
                   p: { xs: 3, sm: 4, md: 5 },
-                  bgcolor: "var(--background-card)",
+                  bgcolor: "#ffffff",
                   border: "1px solid var(--border)",
                   borderRadius: "4px",
+                  boxShadow: "0 3px 14px -2px rgba(60, 40, 25, 0.10), 0 1px 2px rgba(60, 40, 25, 0.06)",
                   position: "relative",
                   transition: "var(--transition)",
                   "&::before": {

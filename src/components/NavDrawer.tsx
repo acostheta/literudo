@@ -97,7 +97,7 @@ export default function NavDrawer({ open, onClose }: NavDrawerProps) {
                 display: "block",
               }}
             >
-              Agrupación Estudiantil
+              Online
             </Typography>
           </Box>
         </Box>

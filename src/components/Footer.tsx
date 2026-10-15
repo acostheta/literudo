@@ -67,7 +67,7 @@ export default function Footer() {
                     display: "block",
                   }}
                 >
-                  Agrupación Estudiantil
+                  Online
                 </span>
               </div>
             </div>

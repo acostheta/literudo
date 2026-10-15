@@ -178,11 +178,11 @@ const PublicPoeticRenderer = ({ content }: { content: any }) => {
 
       case "horizontalRule":
         return (
-          <Box key={key} sx={{ display: "flex", alignItems: "center", justifyContent: "center", my: 8, gap: 2 }}>
-            <span style={{ height: "1px", width: "60px", background: "var(--border)" }} />
-            <span style={{ color: "var(--accent)", fontSize: "1.2rem" }}>❧</span>
-            <span style={{ height: "1px", width: "60px", background: "var(--border)" }} />
-          </Box>
+          <Box
+            key={key}
+            component="hr"
+            sx={{ my: 6, border: 0, borderTop: "1px solid var(--border)" }}
+          />
         );
 
       default:
@@ -378,11 +378,9 @@ export default function PublicPostPage({ params }: { params: Promise<{ slug: str
             </Box>
           </Stack>
 
-          {/* Divisor Ornamental */}
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", my: 5, gap: 2 }}>
-            <span style={{ height: "1px", width: "40px", background: "var(--border)" }} />
-            <span style={{ color: "var(--accent)", fontSize: "1.1rem" }}>❦</span>
-            <span style={{ height: "1px", width: "40px", background: "var(--border)" }} />
+          {/* Divisor */}
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", my: 5 }}>
+            <span style={{ height: "1px", width: "100%", maxWidth: "320px", background: "var(--border)" }} />
           </Box>
 
           {/* Resumen / Epígrafe */}

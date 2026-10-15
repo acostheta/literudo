@@ -8,7 +8,7 @@ const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: "Literudo | Blog de la Agrupación Estudiantil",
+  title: "Literudo Online",
   description: "Blog de la Agrupación Estudiantil Literudo. Artículos, poesía, narrativa y galería de imágenes y videos.",
   icons: {
     icon: "/Logo_UDO.svg",
