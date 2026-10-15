@@ -158,7 +158,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
   if (!post) {
     return (
       <Container sx={{ py: 10, textAlign: 'center' }}>
-        <Typography variant="h5">Obra no encontrada.</Typography>
+        <Typography variant="h5">Artículo no encontrado.</Typography>
         <Button onClick={() => router.back()} sx={{ mt: 2 }}>Volver</Button>
       </Container>
     );
@@ -212,7 +212,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
               '&:hover': { bgcolor: '#f5f5f5', borderColor: post.status === "publicado" ? "success.dark" : "warning.dark" }
             }}
           >
-            {post.status === "publicado" ? "Pasar a Borrador" : "Publicar Obra"}
+            {post.status === "publicado" ? "Pasar a Borrador" : "Publicar artículo"}
           </Button>
 
           <Button 

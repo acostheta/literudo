@@ -142,7 +142,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
           <Typography sx={{ fontSize: '0.9rem' }}>Texto Normal</Typography>
         </MenuItem>
         <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 1 }).run(); setAnchorElHeading(null); }}>
-          <Typography sx={{ fontSize: '1.1rem', fontWeight: 800 }}>Título de Obra (H1)</Typography>
+          <Typography sx={{ fontSize: '1.1rem', fontWeight: 800 }}>Título (H1)</Typography>
         </MenuItem>
         <MenuItem onClick={() => { editor.chain().focus().toggleHeading({ level: 2 }).run(); setAnchorElHeading(null); }}>
           <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>Sección (H2)</Typography>

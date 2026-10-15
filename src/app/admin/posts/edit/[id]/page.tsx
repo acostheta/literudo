@@ -113,7 +113,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                 <MuiLink component={Link} href="/admin/posts" underline="hover" color="inherit">
                   Artículos
                 </MuiLink>
-                <Typography color="text.primary" sx={{ fontSize: '0.7rem', fontWeight: 700 }}>Editar Obra</Typography>
+                <Typography color="text.primary" sx={{ fontSize: '0.7rem', fontWeight: 700 }}>Editar artículo</Typography>
               </Breadcrumbs>
               <Typography variant="h3" sx={{ 
                 fontFamily: '"Lora", serif', 
@@ -195,7 +195,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
             <TextField
               fullWidth
               variant="standard"
-              placeholder="Título de la obra..."
+              placeholder="Título del artículo..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               slotProps={{

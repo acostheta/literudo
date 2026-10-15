@@ -32,7 +32,7 @@ function buildTree(
     }));
 }
 
-export default function CommentSection({ postId }: CommentSectionProps) {
+export default function CommentSection({ postId, targetType = "post" }: CommentSectionProps) {
   const [comments, setComments] = useState<CommentWithProfile[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -69,6 +69,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
         p_post_id: postId,
         p_limit: PAGE_SIZE,
         p_offset: offset,
+        p_target_type: targetType,
       });
 
       if (!error && data) {
@@ -83,13 +84,14 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       const { count } = await supabase
         .from("comments")
         .select("*", { count: "exact", head: true })
-        .eq("post_id", postId);
+        .eq("target_id", postId)
+        .eq("target_type", targetType);
 
       setTotalCount(count || 0);
       setLoading(false);
       setLoadingMore(false);
     },
-    [postId, supabase]
+    [postId, targetType, supabase]
   );
 
   useEffect(() => {
@@ -148,7 +150,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
       <Divider sx={{ mb: 3, opacity: 0.15 }} />
 
       {currentUser ? (
-        <CommentForm postId={postId} onSubmit={handleNewComment} />
+        <CommentForm postId={postId} targetType={targetType} onSubmit={handleNewComment} />
       ) : (
         <Box
           sx={{

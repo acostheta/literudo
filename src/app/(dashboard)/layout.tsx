@@ -4,20 +4,19 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { 
-  FileText, 
-  PenLine, 
-  Settings, 
   LogOut, 
   Menu, 
   X,
-  BookOpen
+  BookOpen,
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react';
 import { MOCK_USER } from '@/lib/mock-store';
 
 const navItems = [
-  { href: '/mis-escritos', label: 'Mis Escritos', icon: FileText },
-  { href: '/nuevo-envio', label: 'Nuevo Envío', icon: PenLine },
-  { href: '#', label: 'Configuración', icon: Settings },
+  { href: '/', label: 'Inicio', icon: BookOpen },
+  { href: '/posts', label: 'Artículos', icon: FileText },
+  { href: '/gallery', label: 'Galería', icon: ImageIcon },
 ];
 
 export default function DashboardLayout({
@@ -58,7 +57,7 @@ export default function DashboardLayout({
               fontSize: '1.2rem',
               fontWeight: '700'
             }}>
-              Portal de Letras
+              Literudo
             </span>
           </div>
           

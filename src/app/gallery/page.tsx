@@ -2,8 +2,17 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryPost } from "@/lib/types/gallery";
+import {
+  Box,
+  Container,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
+import { PhotoCamera, ArrowBack, Collections } from "@mui/icons-material";
 
 export default function GalleryListPage() {
   const [galleries, setGalleries] = useState<GalleryPost[]>([]);
@@ -19,40 +28,48 @@ export default function GalleryListPage() {
         .order("created_at", { ascending: false });
 
       if (posts && posts.length > 0) {
-        const authorIds = [...new Set(posts.map(p => p.author_id))];
+        const authorIds = [...new Set(posts.map((p) => p.author_id))];
         const { data: profiles } = await supabaseRef.current
           .from("profiles")
           .select("id, name")
           .in("id", authorIds);
 
         const profileMap: Record<string, string> = {};
-        profiles?.forEach(p => { profileMap[p.id] = p.name; });
+        profiles?.forEach((p) => {
+          profileMap[p.id] = p.name;
+        });
 
-        const postIds = posts.map(p => p.id);
-        const { data: images } = await supabaseRef.current
-          .from("gallery_images")
-          .select("gallery_post_id, image_url, caption, description")
-          .in("gallery_post_id", postIds);
+        const postIds = posts.map((p) => p.id);
+        const [{ data: images }, { data: embeds }] = await Promise.all([
+          supabaseRef.current
+            .from("gallery_images")
+            .select("gallery_post_id, image_url, caption, description")
+            .in("gallery_post_id", postIds),
+          supabaseRef.current
+            .from("gallery_embeds")
+            .select("gallery_post_id")
+            .in("gallery_post_id", postIds),
+        ]);
 
         const coverMap: Record<string, string> = {};
-        images?.forEach(img => {
+        const countMap: Record<string, number> = {};
+
+        images?.forEach((img) => {
           if (!coverMap[img.gallery_post_id]) {
             coverMap[img.gallery_post_id] = img.image_url;
           }
-        });
-
-        const countMap: Record<string, number> = {};
-        images?.forEach(img => {
           countMap[img.gallery_post_id] = (countMap[img.gallery_post_id] || 0) + 1;
         });
 
-        const enriched = posts.map(p => ({
+        embeds?.forEach((emb) => {
+          countMap[emb.gallery_post_id] = (countMap[emb.gallery_post_id] || 0) + 1;
+        });
+
+        const enriched = posts.map((p) => ({
           ...p,
           profiles: { name: profileMap[p.author_id] || "Anónimo" },
-          gallery_images: coverMap[p.id]
-            ? [{ image_url: coverMap[p.id] }]
-            : [],
-          _imageCount: countMap[p.id] || 0
+          gallery_images: coverMap[p.id] ? [{ image_url: coverMap[p.id] }] : [],
+          _itemCount: countMap[p.id] || 0,
         }));
 
         setGalleries(enriched);
@@ -66,131 +83,239 @@ export default function GalleryListPage() {
   }, []);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'var(--background)',
-      padding: '2rem',
-      maxWidth: '1200px',
-      margin: '0 auto'
-    }}>
-      <div style={{ marginBottom: '1rem' }}>
-        <Link
-          href="/"
-          style={{
-            color: 'var(--foreground-muted)',
-            textDecoration: 'none',
-            fontSize: '0.9rem',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}
-        >
-          ← Inicio
-        </Link>
-      </div>
+    <Box sx={{ bgcolor: "var(--background)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Navbar />
 
-      <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
-        <h1 style={{
-          fontFamily: 'var(--font-playfair)',
-          fontSize: '2.5rem',
-          fontWeight: '700',
-          color: 'var(--foreground)',
-          marginBottom: '0.5rem'
-        }}>
-          Galería
-        </h1>
-        <p style={{
-          fontFamily: 'var(--font-lora)',
-          fontSize: '1.1rem',
-          color: 'var(--foreground-muted)',
-          fontStyle: 'italic'
-        }}>
-          Fotografías, dibujos y pinturas de nuestra comunidad
-        </p>
-      </div>
+      <Container maxWidth="lg" sx={{ py: { xs: 5, md: 8 }, flex: 1 }}>
+        {/* Enlace de Retorno */}
+        <Box sx={{ mb: 4 }}>
+          <Link
+            href="/"
+            style={{
+              color: "var(--foreground-muted)",
+              textDecoration: "none",
+              fontSize: "0.9rem",
+              fontFamily: "var(--font-serif)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              transition: "color 0.2s",
+            }}
+          >
+            <ArrowBack sx={{ fontSize: 16 }} />
+            <span>Volver al inicio</span>
+          </Link>
+        </Box>
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#999' }}>
-          Cargando galerías...
-        </div>
-      ) : galleries.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#999', fontStyle: 'italic' }}>
-          No hay galerías publicadas todavía.
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: '2rem'
-        }}>
-          {galleries.map((gallery) => {
-            const coverImage = gallery.gallery_images?.[0]?.image_url;
-            return (
-              <Link
-                key={gallery.id}
-                href={`/gallery/${gallery.slug}`}
-                style={{
-                  display: 'block',
-                  textDecoration: 'none',
-                  color: 'inherit',
-                  background: 'white',
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                  border: '1px solid var(--border)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-                }}
-              >
-                <div style={{
-                  width: '100%',
-                  height: '200px',
-                  background: coverImage ? `url(${coverImage}) center/cover` : '#f0f0f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {!coverImage && (
-                    <span style={{ color: '#ccc', fontSize: '2rem' }}>📷</span>
-                  )}
-                </div>
-                <div style={{ padding: '1.25rem' }}>
-                  <h2 style={{
-                    fontFamily: 'var(--font-playfair)',
-                    fontSize: '1.3rem',
-                    fontWeight: '600',
-                    marginBottom: '0.5rem',
-                    color: 'var(--foreground)'
-                  }}>
-                    {gallery.title}
-                  </h2>
-                  {gallery.description && (
-                    <p style={{
-                      fontFamily: 'var(--font-lora)',
-                      fontSize: '0.9rem',
-                      color: 'var(--foreground-muted)',
-                      marginBottom: '0.75rem',
-                      lineHeight: 1.5,
-                      fontStyle: 'italic'
-                    }}>
-                      {gallery.description.substring(0, 100)}
-                      {gallery.description.length > 100 ? '...' : ''}
-                    </p>
-                  )}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    fontSize: '0.8rem',
-                    color: 'var(--foreground-muted)'
-                  }}>
-                    <span>{gallery.profiles?.name || 'Anónimo'}</span>
-                    <span>{(gallery as any)._imageCount || gallery.gallery_images?.length || 0} fotos</span>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
-    </div>
+        {/* Encabezado del Gabinete */}
+        <Box sx={{ textAlign: "center", mb: { xs: 5, md: 8 } }}>
+          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+            <PhotoCamera sx={{ color: "var(--accent-text)", fontSize: 20 }} />
+            <Typography
+              variant="overline"
+              sx={{
+                letterSpacing: 3,
+                color: "var(--accent-text)",
+                fontWeight: 700,
+                fontSize: "0.78rem",
+              }}
+            >
+              Galería
+            </Typography>
+          </Box>
+
+          <Typography
+            variant="h1"
+            sx={{
+              fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+              fontSize: { xs: "2.3rem", sm: "3.2rem", md: "4rem" },
+              letterSpacing: "-0.01em",
+              color: "var(--foreground)",
+              mb: 2,
+            }}
+          >
+            Galería
+          </Typography>
+
+          <Typography
+            sx={{
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
+              fontSize: { xs: "1.05rem", md: "1.2rem" },
+              color: "var(--foreground-muted)",
+              maxWidth: 620,
+              mx: "auto",
+              lineHeight: 1.6,
+            }}
+          >
+            Imágenes, videos y audios creados por nuestra comunidad.
+          </Typography>
+        </Box>
+
+        {/* Listado de Galerías */}
+        {loading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+            <CircularProgress sx={{ color: "var(--primary)" }} size={32} />
+          </Box>
+        ) : galleries.length === 0 ? (
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 12,
+              px: 3,
+              bgcolor: "var(--background-card)",
+              borderRadius: "4px",
+              border: "1px dashed var(--border)",
+            }}
+          >
+            <Collections sx={{ fontSize: 44, color: "var(--accent)", mb: 2, opacity: 0.6 }} />
+            <Typography variant="h5" sx={{ mb: 1, color: "var(--foreground)" }}>
+              Aún no hay galerías
+            </Typography>
+            <Typography sx={{ fontStyle: "italic", color: "var(--foreground-muted)" }}>
+              Pronto se publicarán nuevas galerías.
+            </Typography>
+          </Box>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+              gap: "2.5rem",
+            }}
+          >
+            {galleries.map((gallery) => {
+              const coverImage = gallery.gallery_images?.[0]?.image_url;
+              const itemCount = (gallery as any)._itemCount || 0;
+
+              return (
+                <Link
+                  key={gallery.id}
+                  href={`/gallery/${gallery.slug}`}
+                  style={{
+                    display: "block",
+                    textDecoration: "none",
+                    color: "inherit",
+                  }}
+                >
+                  <article
+                    className="book-card"
+                    style={{
+                      height: "100%",
+                      backgroundColor: "var(--background-card)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "4px",
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                      boxShadow: "var(--card-shadow)",
+                      transition: "var(--transition)",
+                    }}
+                  >
+                    {/* Cuadro / Marco de Imagen */}
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "230px",
+                        backgroundColor: "#eee4d3",
+                        backgroundImage: coverImage ? `url(${coverImage})` : "none",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        borderBottom: "1px solid var(--border)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                      }}
+                    >
+                      {!coverImage && (
+                        <PhotoCamera sx={{ color: "var(--accent)", fontSize: 40, opacity: 0.4 }} />
+                      )}
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "10px",
+                          right: "10px",
+                          background: "rgba(36, 24, 18, 0.75)",
+                          backdropFilter: "blur(4px)",
+                          color: "#fcf8f2",
+                          fontSize: "0.72rem",
+                          fontFamily: "var(--font-sans)",
+                          fontWeight: 600,
+                          padding: "3px 8px",
+                          borderRadius: "3px",
+                        }}
+                      >
+                        {itemCount} {itemCount === 1 ? "elemento" : "elementos"}
+                      </div>
+                    </div>
+
+                    {/* Ficha descriptiva */}
+                    <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", flex: 1 }}>
+                      <h2
+                        style={{
+                          fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+                          fontSize: "1.35rem",
+                          fontWeight: 700,
+                          lineHeight: 1.3,
+                          marginBottom: "0.6rem",
+                          color: "var(--foreground)",
+                        }}
+                      >
+                        {gallery.title}
+                      </h2>
+
+                      {gallery.description && (
+                        <p
+                          style={{
+                            fontFamily: "var(--font-serif)",
+                            fontSize: "0.92rem",
+                            color: "var(--foreground-muted)",
+                            lineHeight: 1.6,
+                            marginBottom: "1.2rem",
+                            fontStyle: "italic",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {gallery.description}
+                        </p>
+                      )}
+
+                      <div
+                        style={{
+                          marginTop: "auto",
+                          paddingTop: "0.8rem",
+                          borderTop: "1px solid var(--border-light)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          fontSize: "0.8rem",
+                          color: "var(--foreground-faint)",
+                          fontFamily: "var(--font-sans)",
+                        }}
+                      >
+                        <span>{gallery.profiles?.name || "Anónimo"}</span>
+                        <span>
+                          {new Date(gallery.created_at).toLocaleDateString("es-ES", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </Container>
+
+      <Footer />
+    </Box>
   );
 }

@@ -41,12 +41,14 @@ export default function LoginPage() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("mode") === "forgot-password") {
       setMode("forgot-password");
+    } else if (params.get("mode") === "register") {
+      setMode("register");
     }
   }, []);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // For registration
+  const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -75,7 +77,6 @@ export default function LoginPage() {
       }
     } 
     else if (mode === "register") {
-      // Registro limpio con redirección automática
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password: password.trim(),
@@ -89,7 +90,6 @@ export default function LoginPage() {
         setError(error.message);
         setLoading(false);
       } else {
-        // Si Supabase devuelve una sesión (confirmación desactivada), redirigimos ya
         if (data.session) {
           router.push("/admin");
         } else {
@@ -107,9 +107,10 @@ export default function LoginPage() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "#f4f4f2",
-        backgroundImage: "radial-gradient(#d1d1cf 0.5px, transparent 0.5px)",
-        backgroundSize: "20px 20px",
+        bgcolor: "#f5eee6",
+        backgroundImage: "radial-gradient(#d8c8b4 0.6px, transparent 0.6px)",
+        backgroundSize: "22px 22px",
+        py: 4,
       }}
     >
       <Container maxWidth="sm">
@@ -117,46 +118,87 @@ export default function LoginPage() {
           elevation={0}
           sx={{
             p: { xs: 4, md: 6 },
-            borderRadius: 0,
-            border: "1px solid #e0e0e0",
-            backgroundColor: "white",
-            boxShadow: "20px 20px 60px #d9d9d7, -20px -20px 60px #ffffff",
+            borderRadius: "4px",
+            border: "1px solid #d8c8b4",
+            backgroundColor: "#fcf8f2",
+            boxShadow: "0 12px 40px rgba(60, 40, 25, 0.12), 0 2px 8px rgba(60, 40, 25, 0.06)",
+            position: "relative",
+            overflow: "hidden",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "3px",
+              background: "linear-gradient(90deg, #6b1d22 0%, #b88228 35%, #d49b38 50%, #b88228 65%, #6b1d22 100%)",
+            },
           }}
         >
           <Stack spacing={4} sx={{ width: "100%", alignItems: "center" }}>
             {mode !== "login" && (
               <IconButton 
                 onClick={() => setMode("login")} 
-                sx={{ alignSelf: 'flex-start', mb: -2 }}
+                sx={{ alignSelf: "flex-start", mb: -2, color: "#5e4a3e" }}
               >
                 <BackIcon />
               </IconButton>
             )}
             
             <Box sx={{ width: "100%", display: "flex", justifyContent: "center", mb: 0 }}>
-              <Box 
-                component="img"
-                src="/Logo_UDO.svg"
-                alt="Logo UDO"
-                sx={{ width: 140, height: 140 }}
-              />
+              <Box
+                sx={{
+                  width: 100,
+                  height: 100,
+                  borderRadius: "50%",
+                  border: "2px solid #d8c8b4",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: "#fdfbf7",
+                  boxShadow: "0 4px 12px rgba(60, 40, 25, 0.08)",
+                }}
+              >
+                <Box 
+                  component="img"
+                  src="/Logo_UDO.svg"
+                  alt="Logo UDO"
+                  sx={{ width: 65, height: 65, objectFit: "contain" }}
+                />
+              </Box>
             </Box>
             
             <Box sx={{ width: "100%", textAlign: "center" }}>
-              <Typography variant="h4" sx={{ fontWeight: "bold", letterSpacing: 1, mb: 1, textAlign: "center" }}>
-                {mode === "login" ? "INICIAR SESIÓN" : mode === "register" ? "CREAR CUENTA" : "RECUPERAR ACCESO"}
+              <Typography
+                sx={{
+                  fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+                  fontWeight: 700,
+                  fontSize: "1.6rem",
+                  letterSpacing: "0.06em",
+                  mb: 1,
+                  color: "#241812",
+                }}
+              >
+                {mode === "login" ? "INICIAR SESIÓN" : mode === "register" ? "CREAR CUENTA" : "RECUPERAR CONTRASEÑA"}
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic", textAlign: "center" }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontStyle: "italic",
+                  color: "#5e4a3e",
+                  fontFamily: "var(--font-lora), Georgia, serif",
+                }}
+              >
                 {mode === "login" 
-                  ? '"El conocimiento es la única libertad"' 
+                  ? "Ingresa con tu correo y contraseña" 
                   : mode === "register" 
-                    ? "Únete a nuestra comunidad estudiantil" 
+                    ? "Crea tu cuenta para publicar y comentar" 
                     : "Te enviaremos un código a tu correo para restablecer tu contraseña"}
               </Typography>
             </Box>
 
-            {error && <Alert severity="error" sx={{ width: "100%", borderRadius: 0 }}>{error}</Alert>}
-            {success && <Alert severity="success" sx={{ width: "100%", borderRadius: 0 }}>{success}</Alert>}
+            {error && <Alert severity="error" sx={{ width: "100%", borderRadius: "4px" }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ width: "100%", borderRadius: "4px" }}>{success}</Alert>}
 
             {mode === "forgot-password" ? (
               <PasswordRecoveryWizard
@@ -178,10 +220,10 @@ export default function LoginPage() {
                       required
                       slotProps={{
                         input: {
-                          startAdornment: <InputAdornment position="start"><PersonIcon color="action" /></InputAdornment>,
+                          startAdornment: <InputAdornment position="start"><PersonIcon sx={{ color: "#5e4a3e" }} /></InputAdornment>,
                         }
                       }}
-                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: "4px" } }}
                     />
                   )}
 
@@ -194,10 +236,10 @@ export default function LoginPage() {
                     required
                     slotProps={{
                       input: {
-                        startAdornment: <InputAdornment position="start"><EmailIcon color="action" /></InputAdornment>,
+                        startAdornment: <InputAdornment position="start"><EmailIcon sx={{ color: "#5e4a3e" }} /></InputAdornment>,
                       }
                     }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "4px" } }}
                   />
 
                   <TextField
@@ -210,7 +252,7 @@ export default function LoginPage() {
                     required
                     slotProps={{
                       input: {
-                        startAdornment: <InputAdornment position="start"><LockIcon color="action" /></InputAdornment>,
+                        startAdornment: <InputAdornment position="start"><LockIcon sx={{ color: "#5e4a3e" }} /></InputAdornment>,
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
@@ -220,7 +262,7 @@ export default function LoginPage() {
                         ),
                       }
                     }}
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 0 } }}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "4px" } }}
                   />
 
                   <FormControlLabel
@@ -228,11 +270,11 @@ export default function LoginPage() {
                       <Checkbox
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        sx={{ '& .MuiSvgIcon-root': { borderRadius: 0 } }}
+                        sx={{ color: "#6b1d22", "&.Mui-checked": { color: "#6b1d22" } }}
                       />
                     }
                     label="Recordarme en este equipo"
-                    sx={{ alignSelf: 'flex-start', '& .MuiTypography-root': { fontSize: '0.875rem' } }}
+                    sx={{ alignSelf: "flex-start", "& .MuiTypography-root": { fontSize: "0.875rem", color: "#5e4a3e" } }}
                   />
 
                   <Button
@@ -243,12 +285,16 @@ export default function LoginPage() {
                     disabled={loading}
                     sx={{
                       py: 1.5,
-                      borderRadius: 0,
-                      fontWeight: "bold",
-                      boxShadow: "none",
+                      borderRadius: "4px",
+                      fontWeight: 700,
+                      fontFamily: "var(--font-inter), sans-serif",
+                      bgcolor: "#6b1d22",
+                      border: "1px solid #551518",
+                      boxShadow: "0 3px 10px rgba(107, 29, 34, 0.2)",
+                      "&:hover": { bgcolor: "#551518" },
                     }}
                   >
-                    {loading ? <CircularProgress size={24} color="inherit" /> : mode === "login" ? "ENTRAR" : "REGISTRARME"}
+                    {loading ? <CircularProgress size={24} color="inherit" /> : mode === "login" ? "INICIAR SESIÓN" : "CREAR CUENTA"}
                   </Button>
 
                   {mode === "login" && (
@@ -258,7 +304,7 @@ export default function LoginPage() {
                         type="button"
                         variant="caption" 
                         onClick={() => setMode("forgot-password")}
-                        sx={{ color: 'text.secondary', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                        sx={{ color: "#5e4a3e", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                       >
                         ¿Olvidaste tu contraseña?
                       </MuiLink>
@@ -267,7 +313,7 @@ export default function LoginPage() {
                         type="button"
                         variant="caption" 
                         onClick={() => setMode("register")}
-                        sx={{ color: 'primary.main', fontWeight: 'bold', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                        sx={{ color: "#6b1d22", fontWeight: "bold", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
                       >
                         Crear cuenta
                       </MuiLink>
@@ -277,8 +323,8 @@ export default function LoginPage() {
               </Box>
             )}
             
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 4, textAlign: "center", display: "block", width: "100%" }}>
-              © {new Date().getFullYear()} Agrupación Estudiantil Literudo
+            <Typography variant="caption" sx={{ mt: 4, textAlign: "center", display: "block", width: "100%", color: "#8a7568", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>
+              © {new Date().getFullYear()} Agrupación Estudiantil Literudo · Universidad de Oriente
             </Typography>
           </Stack>
         </Paper>
