@@ -10,17 +10,19 @@ interface EmbedPlayerProps {
 }
 
 export default function EmbedPlayer({ platform, embedUrl, caption, description }: EmbedPlayerProps) {
-  const platformColor = platform === "youtube" ? "#FF0000" : "#FF5500";
-  const platformLabel = platform === "youtube" ? "YouTube" : "SoundCloud";
+  const platformColor = platform === "youtube" ? "#8a2a30" : "#b88228";
+  const platformLabel = platform === "youtube" ? "Registro Audiovisual (YouTube)" : "Grabación Sonora (SoundCloud)";
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: 3 }}>
       <Box
         sx={{
           position: "relative",
-          borderRadius: 1,
+          borderRadius: "4px",
           overflow: "hidden",
-          border: "1px solid #e0e0e0",
+          border: "1px solid var(--border)",
+          bgcolor: "#241812",
+          boxShadow: "var(--card-shadow)",
         }}
       >
         {platform === "youtube" ? (
@@ -52,11 +54,11 @@ export default function EmbedPlayer({ platform, embedUrl, caption, description }
       </Box>
 
       {(caption || platform) && (
-        <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ mt: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
           <Box
             sx={{
-              width: 6,
-              height: 6,
+              width: 8,
+              height: 8,
               borderRadius: "50%",
               bgcolor: platformColor,
               flexShrink: 0,
@@ -64,7 +66,12 @@ export default function EmbedPlayer({ platform, embedUrl, caption, description }
           />
           <Typography
             variant="caption"
-            sx={{ color: "text.secondary", fontStyle: "italic" }}
+            sx={{
+              color: "var(--foreground-muted)",
+              fontFamily: "var(--font-serif)",
+              fontStyle: "italic",
+              fontSize: "0.85rem",
+            }}
           >
             {caption || platformLabel}
           </Typography>
@@ -74,10 +81,10 @@ export default function EmbedPlayer({ platform, embedUrl, caption, description }
       {description && (
         <Typography
           sx={{
-            mt: 1.5,
-            fontSize: "0.9rem",
-            fontFamily: '"Lora", serif',
-            color: "#555",
+            mt: 1,
+            fontSize: "0.92rem",
+            fontFamily: "var(--font-serif)",
+            color: "var(--foreground-muted)",
             lineHeight: 1.6,
           }}
         >

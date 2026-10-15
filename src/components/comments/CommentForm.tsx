@@ -15,6 +15,7 @@ import { CommentFormProps } from "@/lib/types/comment";
 
 export default function CommentForm({
   postId,
+  targetType = "post",
   parentId = null,
   onSubmit,
   onCancel,
@@ -38,7 +39,8 @@ export default function CommentForm({
     if (!user) return;
 
     const { error } = await supabase.from("comments").insert({
-      post_id: postId,
+      target_id: postId,
+      target_type: targetType,
       user_id: user.id,
       parent_id: parentId,
       content: trimmed,

@@ -92,7 +92,7 @@ export default function NewPostPage() {
                 <MuiLink component={Link} href="/admin/posts" underline="hover" color="inherit">
                   Artículos
                 </MuiLink>
-                <Typography color="text.primary" sx={{ fontSize: '0.7rem', fontWeight: 700 }}>Nueva Obra</Typography>
+                <Typography color="text.primary" sx={{ fontSize: '0.7rem', fontWeight: 700 }}>Nuevo artículo</Typography>
               </Breadcrumbs>
               <Typography variant="h3" sx={{ 
                 fontFamily: '"Lora", serif', 
@@ -213,7 +213,7 @@ export default function NewPostPage() {
               multiline
               rows={2}
               variant="standard"
-              placeholder="Añade un breve resumen que atrape al lector..."
+              placeholder="Añade un breve resumen del artículo..."
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               slotProps={{

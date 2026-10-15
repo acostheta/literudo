@@ -281,7 +281,8 @@ export default function CommentItem({
         {isReplying && (
           <Box sx={{ mt: 1.5, mb: 1 }}>
             <CommentForm
-              postId={comment.post_id}
+              postId={comment.target_id}
+              targetType={comment.target_type}
               parentId={comment.id}
               onSubmit={() => {
                 onCancelReply?.();

@@ -144,7 +144,7 @@ export default function DashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <StatCard 
-            title="Obras Escritas" 
+            title="Artículos publicados" 
             value={stats?.totalPosts} 
             subValue="Crecimiento +12%" 
             color="success.main"

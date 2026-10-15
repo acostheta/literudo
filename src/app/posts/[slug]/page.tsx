@@ -1,25 +1,28 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import CommentSection from "@/components/comments/CommentSection";
+import PostEngagement from "@/components/engagement/PostEngagement";
 import { createClient } from "@/lib/supabase/client";
 import {
   Box,
   Container,
   Typography,
-  IconButton,
   Stack,
   CircularProgress,
-  Divider,
-  Tooltip,
+  Button,
 } from "@mui/material";
 import {
   ArrowBack as BackIcon,
+  AutoStories,
+  PersonOutlined,
+  CalendarToday,
 } from "@mui/icons-material";
-import Link from "next/link";
-import CommentSection from "@/components/comments/CommentSection";
 
-// Reutilizamos el renderizador poético pero con toques más refinados para el público
+// Renderizador tipográfico literario para contenido TipTap
 const PublicPoeticRenderer = ({ content }: { content: any }) => {
   if (!content) return null;
 
@@ -28,93 +31,159 @@ const PublicPoeticRenderer = ({ content }: { content: any }) => {
     const key = `${node.type}-${index}`;
 
     switch (node.type) {
-      case 'doc':
+      case "doc":
         return node.content?.map((child: any, i: number) => renderNode(child, i));
-      
-      case 'heading':
+
+      case "heading": {
         const level = node.attrs?.level || 1;
         return (
-          <Typography 
+          <Typography
             key={key}
-            variant={`h${level}` as any} 
-            sx={{ 
-              fontFamily: '"Lora", serif', 
-              fontWeight: 800,
-              mt: level === 1 ? 8 : 6,
-              mb: 3,
-              textAlign: level === 1 ? 'center' : 'left',
-              lineHeight: 1.2,
-              fontSize: level === 1 ? { xs: '2.5rem', md: '3.5rem' } : { xs: '1.8rem', md: '2.2rem' }
+            variant={`h${level}` as any}
+            sx={{
+              fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+              fontWeight: 700,
+              mt: level === 1 ? 7 : level === 2 ? 5 : 4,
+              mb: 2.5,
+              textAlign: level === 1 ? "center" : "left",
+              lineHeight: 1.25,
+              color: "var(--foreground)",
+              fontSize:
+                level === 1
+                  ? { xs: "2.1rem", md: "2.8rem" }
+                  : level === 2
+                  ? { xs: "1.6rem", md: "2rem" }
+                  : { xs: "1.3rem", md: "1.5rem" },
             }}
           >
             {node.content?.map((child: any, i: number) => renderNode(child, i))}
           </Typography>
         );
+      }
 
-      case 'paragraph':
+      case "paragraph":
         return (
-          <Typography 
+          <Typography
             key={key}
-            sx={{ 
-              fontFamily: '"Lora", serif', 
-              fontSize: '1.2rem',
+            sx={{
+              fontFamily: "var(--font-serif)",
+              fontSize: { xs: "1.1rem", md: "1.2rem" },
               lineHeight: 2.1,
-              mb: 4,
-              color: '#2c2c2c',
-              textAlign: 'justify',
-              textJustify: 'inter-word',
-              letterSpacing: '0.01em'
+              mb: 3.5,
+              color: "#2a1e18",
+              textAlign: "justify",
+              textJustify: "inter-word",
+              letterSpacing: "0.01em",
             }}
           >
             {node.content?.map((child: any, i: number) => renderNode(child, i))}
           </Typography>
         );
 
-      case 'blockquote':
+      case "blockquote":
         return (
-          <Box 
+          <Box
             key={key}
-            sx={{ 
-              my: 8, 
-              py: 1,
-              px: { xs: 3, md: 6 },
-              borderLeft: '1.5px solid #1a1a1a',
-              fontStyle: 'italic',
-              bgcolor: 'rgba(0,0,0,0.02)',
-              borderRadius: '0 8px 8px 0'
+            sx={{
+              my: 5,
+              py: 2,
+              px: { xs: 3, md: 5 },
+              borderLeft: "3px solid var(--primary)",
+              fontStyle: "italic",
+              bgcolor: "rgba(107, 29, 34, 0.04)",
+              borderRadius: "0 4px 4px 0",
+              borderTop: "1px solid var(--border-light)",
+              borderBottom: "1px solid var(--border-light)",
             }}
           >
-            <Typography sx={{ fontSize: '1.5rem', fontFamily: '"Lora", serif', color: '#444', lineHeight: 1.6 }}>
+            <Typography
+              sx={{
+                fontSize: { xs: "1.25rem", md: "1.45rem" },
+                fontFamily: "var(--font-serif)",
+                color: "var(--foreground)",
+                lineHeight: 1.7,
+              }}
+            >
               {node.content?.map((child: any, i: number) => renderNode(child, i))}
             </Typography>
           </Box>
         );
 
-      case 'text':
+      case "text": {
         let text: React.ReactNode = node.text;
         if (node.marks) {
           node.marks.forEach((mark: any) => {
-            if (mark.type === 'bold') text = <strong style={{ fontWeight: 800 }}>{text}</strong>;
-            if (mark.type === 'italic') text = <em style={{ fontStyle: 'italic' }}>{text}</em>;
-            if (mark.type === 'underline') text = <u style={{ textDecoration: 'underline' }}>{text}</u>;
-            if (mark.type === 'highlight') text = <mark style={{ backgroundColor: '#fff59d', padding: '0 4px' }}>{text}</mark>;
-            if (mark.type === 'link') text = <a href={mark.attrs.href} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>{text}</a>;
+            if (mark.type === "bold") text = <strong style={{ fontWeight: 800 }}>{text}</strong>;
+            if (mark.type === "italic") text = <em style={{ fontStyle: "italic" }}>{text}</em>;
+            if (mark.type === "underline") text = <u style={{ textDecoration: "underline" }}>{text}</u>;
+            if (mark.type === "highlight")
+              text = (
+                <mark
+                  style={{
+                    backgroundColor: "rgba(212, 155, 56, 0.25)",
+                    color: "inherit",
+                    padding: "0 4px",
+                    borderRadius: "2px",
+                  }}
+                >
+                  {text}
+                </mark>
+              );
+            if (mark.type === "link")
+              text = (
+                <a
+                  href={mark.attrs.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "var(--primary)", textDecoration: "underline" }}
+                >
+                  {text}
+                </a>
+              );
           });
         }
         return <span key={key}>{text}</span>;
+      }
 
-      case 'bulletList':
-        return <ul key={key} style={{ paddingLeft: '2rem', marginBottom: '2.5rem', listStyleType: 'circle' }}>{node.content?.map((child: any, i: number) => renderNode(child, i))}</ul>;
-      
-      case 'listItem':
-        return <li key={key} style={{ marginBottom: '1.2rem', fontFamily: '"Lora", serif', fontSize: '1.1rem', color: '#333' }}>{node.content?.map((child: any, i: number) => renderNode(child, i))}</li>;
+      case "bulletList":
+        return (
+          <ul
+            key={key}
+            style={{
+              paddingLeft: "2.5rem",
+              marginBottom: "2.5rem",
+              listStyleType: "circle",
+              color: "var(--foreground)",
+            }}
+          >
+            {node.content?.map((child: any, i: number) => renderNode(child, i))}
+          </ul>
+        );
 
-      case 'horizontalRule':
-        return <Box key={key} sx={{ display: 'flex', justifyContent: 'center', my: 12, opacity: 0.2 }}>
-          <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#000', mx: 1 }} />
-          <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#000', mx: 1 }} />
-          <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: '#000', mx: 1 }} />
-        </Box>;
+      case "listItem":
+        return (
+          <li
+            key={key}
+            style={{
+              marginBottom: "1rem",
+              fontFamily: "var(--font-serif)",
+              fontSize: "1.1rem",
+              lineHeight: 1.9,
+              color: "#2a1e18",
+            }}
+          >
+            {node.content?.map((child: any, i: number) => renderNode(child, i))}
+          </li>
+        );
+
+      case "horizontalRule":
+        return (
+          <Box
+            key={key}
+            component="hr"
+            sx={{ my: 6, border: 0, borderTop: "1px solid var(--border)" }}
+          />
+        );
 
       default:
         return null;
@@ -126,7 +195,6 @@ const PublicPoeticRenderer = ({ content }: { content: any }) => {
 
 export default function PublicPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
-  const router = useRouter();
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -145,127 +213,271 @@ export default function PublicPostPage({ params }: { params: Promise<{ slug: str
     };
 
     fetchPost();
-  }, [slug]);
+  }, [slug, supabase]);
 
   if (loading) {
     return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', bgcolor: '#fdfdfb' }}>
-        <CircularProgress color="inherit" size={20} />
+      <Box sx={{ minHeight: "100vh", bgcolor: "var(--background)", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <Box sx={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", py: 12 }}>
+          <CircularProgress sx={{ color: "var(--primary)" }} size={32} />
+        </Box>
+        <Footer />
       </Box>
     );
   }
 
   if (!post) {
     return (
-      <Container sx={{ py: 15, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ fontFamily: '"Lora", serif', mb: 4 }}>Esta página del libro está en blanco.</Typography>
-        <Typography sx={{ mb: 6, opacity: 0.6 }}>La obra que buscas no existe o aún no ha sido revelada al mundo.</Typography>
-        <Button component={Link} href="/" variant="outlined" color="inherit" sx={{ borderRadius: 0, px: 4 }}>
-          Volver al Inicio
-        </Button>
-      </Container>
+      <Box sx={{ minHeight: "100vh", bgcolor: "var(--background)", display: "flex", flexDirection: "column" }}>
+        <Navbar />
+        <Container maxWidth="sm" sx={{ py: 15, textAlign: "center", flex: 1 }}>
+          <AutoStories sx={{ fontSize: 50, color: "var(--accent)", mb: 2, opacity: 0.7 }} />
+          <Typography
+            variant="h3"
+            sx={{
+              fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+              mb: 2,
+              color: "var(--foreground)",
+            }}
+          >
+            Página no encontrada
+          </Typography>
+          <Typography sx={{ mb: 5, color: "var(--foreground-muted)", fontFamily: "var(--font-serif)" }}>
+            El artículo que buscas no existe o aún no ha sido publicado.
+          </Typography>
+          <Button
+            component={Link}
+            href="/"
+            variant="outlined"
+            sx={{
+              borderColor: "var(--primary)",
+              color: "var(--primary)",
+              fontFamily: "var(--font-sans)",
+              fontWeight: 600,
+            }}
+          >
+            Volver al inicio
+          </Button>
+        </Container>
+        <Footer />
+      </Box>
     );
   }
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh', 
-      bgcolor: '#fdfdfb', 
-      color: '#1a1a1a',
-      pb: 20,
-      animation: 'fadeIn 1.5s ease-in-out',
-      '@keyframes fadeIn': {
-        from: { opacity: 0, transform: 'translateY(10px)' },
-        to: { opacity: 1, transform: 'translateY(0)' }
-      }
-    }}>
-      {/* Botón Volver Discreto */}
-      <Box sx={{ position: 'absolute', top: { xs: 20, md: 40 }, left: { xs: 20, md: 40 } }}>
-        <IconButton component={Link} href="/" sx={{ opacity: 0.3, '&:hover': { opacity: 1 } }}>
-          <BackIcon />
-        </IconButton>
-      </Box>
+    <Box sx={{ bgcolor: "var(--background)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Navbar />
 
-      <Container maxWidth="sm" sx={{ pt: { xs: 12, md: 24 } }}>
-        <Stack spacing={2} sx={{ alignItems: "center" }}>
-          {/* Categoría o Sello */}
-          <Typography variant="caption" sx={{ letterSpacing: 4, textTransform: 'uppercase', opacity: 0.4, fontWeight: 700 }}>
-            {post.category || 'Literudo'}
-          </Typography>
+      <Container maxWidth="md" sx={{ py: { xs: 4, md: 7 }, flex: 1 }}>
+        {/* Navegación Retorno */}
+        <Box sx={{ mb: 4 }}>
+          <Link
+            href="/posts"
+            style={{
+              color: "var(--foreground-muted)",
+              textDecoration: "none",
+              fontSize: "0.9rem",
+              fontFamily: "var(--font-serif)",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              transition: "color 0.2s",
+            }}
+          >
+            <BackIcon sx={{ fontSize: 16 }} />
+            <span>Volver a los artículos</span>
+          </Link>
+        </Box>
 
-          {/* Título Principal */}
-          <Typography 
-            variant="h1" 
-            sx={{ 
-              fontFamily: '"Lora", serif', 
-              fontWeight: 800, 
-              fontSize: { xs: '2.8rem', md: '4.8rem' },
-              textAlign: 'center',
-              lineHeight: 1,
-              letterSpacing: -2,
-              mt: 2,
-              mb: 4
+        {/* Folio de Lectura (Papel Pergamino de Biblioteca) */}
+        <Box
+          component="article"
+          sx={{
+            bgcolor: "var(--background-card)",
+            border: "1px solid var(--border)",
+            borderRadius: "4px",
+            boxShadow: "0 6px 30px -4px rgba(60, 40, 25, 0.08)",
+            p: { xs: 3.5, sm: 6, md: 8 },
+            position: "relative",
+          }}
+        >
+          {/* Sello de Sección / Categoría */}
+          <Stack
+            direction="row"
+            spacing={1.5}
+            sx={{ alignItems: "center", justifyContent: "center", mb: 3 }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-sans)",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "var(--primary)",
+                background: "var(--primary-faint)",
+                border: "1px solid rgba(107, 29, 34, 0.2)",
+                padding: "4px 12px",
+                borderRadius: "3px",
+              }}
+            >
+              {post.category || "Sin categoría"}
+            </span>
+          </Stack>
+
+          {/* Título de la Obra */}
+          <Typography
+            variant="h1"
+            sx={{
+              fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+              fontWeight: 800,
+              fontSize: { xs: "2.4rem", sm: "3.2rem", md: "4rem" },
+              textAlign: "center",
+              lineHeight: 1.15,
+              letterSpacing: "-0.01em",
+              color: "var(--foreground)",
+              mb: 3,
             }}
           >
             {post.title}
           </Typography>
 
-          <Divider sx={{ width: 60, height: 2, bgcolor: '#1a1a1a', my: 6, opacity: 0.1, border: 'none' }} />
+          {/* Datos del Autor y Fecha */}
+          <Stack
+            direction="row"
+            spacing={3}
+            sx={{
+              justifyContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+              color: "var(--foreground-muted)",
+              fontFamily: "var(--font-sans)",
+              fontSize: "0.85rem",
+              mb: 4,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+              <PersonOutlined sx={{ fontSize: 16, color: "var(--primary)" }} />
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {post.profiles?.name || "Anónimo"}
+              </Typography>
+            </Box>
 
-          {/* Resumen Poético */}
+            <span>·</span>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
+              <CalendarToday sx={{ fontSize: 15, color: "var(--accent-text)" }} />
+              <Typography variant="body2">
+                {new Date(post.created_at).toLocaleDateString("es-ES", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </Typography>
+            </Box>
+          </Stack>
+
+          {/* Divisor */}
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", my: 5 }}>
+            <span style={{ height: "1px", width: "100%", maxWidth: "320px", background: "var(--border)" }} />
+          </Box>
+
+          {/* Resumen / Epígrafe */}
           {post.excerpt && (
-            <Typography 
-              sx={{ 
-                fontFamily: '"Lora", serif', 
-                fontSize: '1.4rem',
-                fontStyle: 'italic',
-                textAlign: 'center',
-                color: '#555',
-                lineHeight: 1.7,
-                maxWidth: '90%',
-                mb: 12
+            <Typography
+              sx={{
+                fontFamily: "var(--font-serif)",
+                fontSize: { xs: "1.2rem", md: "1.35rem" },
+                fontStyle: "italic",
+                textAlign: "center",
+                color: "var(--foreground-muted)",
+                lineHeight: 1.75,
+                maxWidth: "680px",
+                mx: "auto",
+                mb: 6,
+                px: { xs: 1, md: 3 },
               }}
             >
-              {post.excerpt}
+              «{post.excerpt}»
             </Typography>
           )}
 
-          {/* Cuerpo de la Obra */}
-          <Box sx={{ width: '100%' }}>
+          {/* Cuerpo Principal del Manuscrito */}
+          <Box sx={{ width: "100%", mt: 4 }}>
             <PublicPoeticRenderer content={post.content} />
           </Box>
 
-          {/* Firma Final */}
-          <Box sx={{ mt: 15, width: '100%', textAlign: 'center' }}>
-            <Divider sx={{ mb: 10, width: '30%', mx: 'auto', opacity: 0.1 }} />
-            
-            <Stack spacing={2} sx={{ alignItems: "center" }}>
-              <Typography variant="caption" sx={{ letterSpacing: 3, textTransform: 'uppercase', opacity: 0.4 }}>
-                Fin de la Obra
-              </Typography>
-              
-              <Typography sx={{ fontFamily: '"Lora", serif', fontSize: '1.2rem', fontWeight: 700 }}>
-                {post.profiles?.name || "Autor Anónimo"}
-              </Typography>
-              
-              <Typography variant="caption" sx={{ opacity: 0.3, fontStyle: 'italic' }}>
-                Publicado el {new Date(post.created_at).toLocaleDateString('es-ES', { 
-                  day: 'numeric', 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}
-              </Typography>
-            </Stack>
+          {/* Colofón Final / Ex-Libris */}
+          <Box
+            sx={{
+              mt: 10,
+              pt: 5,
+              borderTop: "1px solid var(--border)",
+              textAlign: "center",
+              bgcolor: "var(--background-warm)",
+              borderRadius: "4px",
+              p: 4,
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                letterSpacing: 3,
+                textTransform: "uppercase",
+                color: "var(--accent-text)",
+                fontFamily: "var(--font-sans)",
+                fontWeight: 700,
+                display: "block",
+                mb: 1,
+              }}
+            >
+              Fin del artículo
+            </Typography>
+
+            <Typography
+              sx={{
+                fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+                fontSize: "1.3rem",
+                fontWeight: 700,
+                color: "var(--foreground)",
+                mb: 0.5,
+              }}
+            >
+              {post.profiles?.name || "Anónimo"}
+            </Typography>
+
+            <Typography
+              variant="caption"
+              sx={{
+                color: "var(--foreground-muted)",
+                fontStyle: "italic",
+                fontFamily: "var(--font-serif)",
+              }}
+            >
+              Publicado el{" "}
+              {new Date(post.created_at).toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </Typography>
           </Box>
+        </Box>
 
-        </Stack>
-
-        <Box sx={{ width: '100%', mt: 8 }}>
+        {/* Sección de Discusión y Comentarios */}
+        <Box sx={{ mt: 8, bgcolor: "var(--background-card)", p: { xs: 3, sm: 5 }, borderRadius: "4px", border: "1px solid var(--border)" }}>
+          <PostEngagement
+            targetId={post.id}
+            targetType="post"
+            url={`/posts/${post.slug}`}
+            title={post.title}
+          />
           <CommentSection postId={post.id} />
         </Box>
       </Container>
+
+      <Footer />
     </Box>
   );
 }
-
-import { Button } from "@mui/material";

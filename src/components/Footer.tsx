@@ -1,135 +1,292 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer style={{
-      background: 'var(--foreground)',
-      color: 'var(--background)',
-      padding: '4rem 0 2rem',
-      marginTop: 'auto'
-    }}>
-      <div className="container" style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '3rem',
-        marginBottom: '3rem'
-      }}>
-        <div>
-          <h3 style={{
-            fontFamily: 'var(--font-playfair)',
-            fontSize: '1.3rem',
-            marginBottom: '1rem',
-            color: 'var(--background)'
-          }}>
-            Portal de Letras
-          </h3>
-          <p style={{
-            color: 'var(--foreground-muted)',
-            fontSize: '0.9rem',
-            lineHeight: '1.6'
-          }}>
-            Espacio dedicado a la difusión de la creación literaria universitaria.
-          </p>
-        </div>
-        
-        <div>
-          <h4 style={{
-            fontSize: '0.85rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '1rem',
-            color: 'var(--foreground-muted)'
-          }}>Navegación</h4>
-          <ul style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.7rem'
-          }}>
-            <li>
-              <Link href="/" style={{ color: 'var(--background)', fontSize: '0.95rem' }}>
-                Inicio
-              </Link>
-            </li>
-            <li>
-              <Link href="/blog" style={{ color: 'var(--background)', fontSize: '0.95rem' }}>
-                Blog
-              </Link>
-            </li>
-            <li>
-              <Link href="/blog" style={{ color: 'var(--background)', fontSize: '0.95rem' }}>
-                Categorías
-              </Link>
-            </li>
-          </ul>
-        </div>
+    <footer
+      style={{
+        backgroundColor: "#2c1e18",
+        color: "#f5eee6",
+        borderTop: "3px double #d49b38",
+        marginTop: "auto",
+        position: "relative",
+      }}
+    >
+      {/* Sello superior */}
+      <div
+        style={{
+          maxWidth: "1180px",
+          margin: "0 auto",
+          padding: "4rem 1.5rem 2.5rem",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "2.5rem",
+            marginBottom: "3rem",
+          }}
+        >
+          {/* Columna 1: Masthead */}
+          <div style={{ maxWidth: "320px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+              <div
+                style={{
+                  width: "36px",
+                  height: "36px",
+                  borderRadius: "50%",
+                  background: "#fcf8f2",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1px solid #d49b38",
+                }}
+              >
+                <img src="/Logo_UDO.svg" alt="Literudo" style={{ width: "24px", height: "24px" }} />
+              </div>
+              <div>
+                <span
+                  style={{
+                    fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+                    fontSize: "1.25rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    color: "#fcf8f2",
+                    display: "block",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  LITERUDO
+                </span>
+                <span
+                  style={{
+                    fontSize: "0.68rem",
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: "#d49b38",
+                    display: "block",
+                  }}
+                >
+                  Online
+                </span>
+              </div>
+            </div>
+            <p
+              style={{
+                color: "#c7b7a8",
+                fontSize: "0.88rem",
+                lineHeight: "1.7",
+                fontFamily: "var(--font-serif)",
+                fontStyle: "italic",
+              }}
+            >
+              Blog de la comunidad estudiantil de la Universidad de Oriente: artículos, ensayos, poesía y galería visual.
+            </p>
+          </div>
 
-        <div>
-          <h4 style={{
-            fontSize: '0.85rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '1rem',
-            color: 'var(--foreground-muted)'
-          }}>Institucional</h4>
-          <ul style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.7rem'
-          }}>
-            <li>
-              <a href="#" style={{ color: 'var(--background)', fontSize: '0.95rem' }}>
-                Acerca de
-              </a>
-            </li>
-            <li>
-              <a href="#" style={{ color: 'var(--background)', fontSize: '0.95rem' }}>
-                Envíos
-              </a>
-            </li>
-            <li>
-              <a href="#" style={{ color: 'var(--background)', fontSize: '0.95rem' }}>
-                Contacto
-              </a>
-            </li>
-          </ul>
-        </div>
+          {/* Columna 2: Navegación */}
+          <div>
+            <h4
+              style={{
+                fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+                fontSize: "0.82rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#d49b38",
+                marginBottom: "1.2rem",
+                fontWeight: 700,
+              }}
+            >
+              Navegación
+            </h4>
+            <ul
+              style={{
+                listStyle: "none",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.65rem",
+                padding: 0,
+                margin: 0,
+              }}
+            >
+              <li>
+                <Link
+                  href="/"
+                  style={{
+                    color: "#e2d5c7",
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                    transition: "color 0.2s",
+                  }}
+                >
+                  Inicio
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/posts"
+                  style={{
+                    color: "#e2d5c7",
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                    transition: "color 0.2s",
+                  }}
+                >
+                  Artículos
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/gallery"
+                  style={{
+                    color: "#e2d5c7",
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                    transition: "color 0.2s",
+                  }}
+                >
+                  Galería
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/nuevo-envio"
+                  style={{
+                    color: "#e2d5c7",
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                    transition: "color 0.2s",
+                  }}
+                >
+                  Enviar escrito
+                </Link>
+              </li>
+            </ul>
+          </div>
 
-        <div>
-          <h4 style={{
-            fontSize: '0.85rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '1rem',
-            color: 'var(--foreground-muted)'
-          }}>Síguenos</h4>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <a href="#" aria-label="Twitter" style={{ color: 'var(--background)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-              </svg>
-            </a>
-            <a href="#" aria-label="Instagram" style={{ color: 'var(--background)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-              </svg>
-            </a>
+          {/* Columna 3: Salón & Cuenta */}
+          <div>
+            <h4
+              style={{
+                fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+                fontSize: "0.82rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#d49b38",
+                marginBottom: "1.2rem",
+                fontWeight: 700,
+              }}
+            >
+              Cuenta
+            </h4>
+            <ul
+              style={{
+                listStyle: "none",
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.65rem",
+                padding: 0,
+                margin: 0,
+              }}
+            >
+              <li>
+                <Link
+                  href="/login"
+                  style={{
+                    color: "#e2d5c7",
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                    transition: "color 0.2s",
+                  }}
+                >
+                  Iniciar sesión
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/admin"
+                  style={{
+                    color: "#e2d5c7",
+                    fontSize: "0.9rem",
+                    textDecoration: "none",
+                    transition: "color 0.2s",
+                  }}
+                >
+                  Panel
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Columna 4: Ex-Libris y Lema */}
+          <div
+            style={{
+              padding: "1.2rem",
+              background: "rgba(0,0,0,0.25)",
+              border: "1px solid rgba(212, 155, 56, 0.25)",
+              borderRadius: "4px",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
+                fontSize: "0.78rem",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "#d49b38",
+                marginBottom: "0.5rem",
+                fontWeight: 700,
+              }}
+            >
+              Lema
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-serif)",
+                fontSize: "0.88rem",
+                color: "#f5eee6",
+                fontStyle: "italic",
+                lineHeight: "1.6",
+                marginBottom: "0.75rem",
+              }}
+            >
+              «Del pueblo venimos, hacia el pueblo vamos.»
+            </p>
+            <span
+              style={{
+                fontSize: "0.72rem",
+                color: "#a49182",
+                display: "block",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              Universidad de Oriente · Venezuela
+            </span>
           </div>
         </div>
-      </div>
-      
-      <div className="container" style={{
-        borderTop: '1px solid rgba(255,255,255,0.1)',
-        paddingTop: '1.5rem',
-        textAlign: 'center'
-      }}>
-        <p style={{
-          color: 'var(--foreground-muted)',
-          fontSize: '0.85rem'
-        }}>
-          © {new Date().getFullYear()} Portal de Letras - Universidad. Todos los derechos reservados.
-        </p>
+
+        {/* Separador ornamental */}
+        <div
+          style={{
+            borderTop: "1px solid rgba(212, 155, 56, 0.2)",
+            paddingTop: "1.5rem",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "1rem",
+            fontSize: "0.8rem",
+            color: "#9e8d7f",
+            fontFamily: "var(--font-sans)",
+          }}
+        >
+          <span>
+            © {new Date().getFullYear()} Agrupación Estudiantil Literudo. Todos los derechos reservados.
+          </span>
+          <span style={{ fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
+            Agrupación Estudiantil Literudo
+          </span>
+        </div>
       </div>
     </footer>
   );

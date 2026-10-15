@@ -1,6 +1,7 @@
 export interface Comment {
   id: string;
-  post_id: string;
+  target_id: string;
+  target_type: "post" | "gallery";
   user_id: string;
   parent_id: string | null;
   content: string;
@@ -18,6 +19,7 @@ export interface CommentWithProfile extends Comment {
 
 export interface CommentSectionProps {
   postId: string;
+  targetType?: "post" | "gallery";
 }
 
 export interface CommentItemProps {
@@ -35,6 +37,7 @@ export interface CommentItemProps {
 
 export interface CommentFormProps {
   postId: string;
+  targetType?: "post" | "gallery";
   parentId?: string | null;
   onSubmit?: () => void;
   onCancel?: () => void;

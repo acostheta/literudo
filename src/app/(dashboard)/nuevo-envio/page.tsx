@@ -202,7 +202,7 @@ export default function NuevoEnvioPage() {
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Escribe un título evocador para tu escrito..."
+              placeholder="Escribe el título de tu escrito..."
               style={{
                 width: '100%',
                 padding: '0.85rem 1rem',
