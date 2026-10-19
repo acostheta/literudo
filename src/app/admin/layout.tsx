@@ -237,6 +237,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     color: "white",
     borderRadius: 0,
     border: "none",
+    "& .MuiTypography-root": { color: "inherit" },
   };
 
   return (

@@ -216,10 +216,10 @@ export default function DashboardPage() {
               justifyContent: 'center'
             }}
           >
-            <Typography variant="h5" sx={{ fontFamily: '"Lora", serif', fontWeight: 700, mb: 2 }}>
+            <Typography variant="h5" sx={{ fontFamily: '"Lora", serif', fontWeight: 700, mb: 2, color: 'inherit' }}>
               "La literatura es la única libertad que nos queda."
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.7, mb: 4 }}>
+            <Typography variant="body2" sx={{ opacity: 0.7, mb: 4, color: 'inherit' }}>
               Sigue fomentando la creación de contenido de calidad. Tu gestión es el motor de Literudo.
             </Typography>
             <Stack direction="row" spacing={2}>
