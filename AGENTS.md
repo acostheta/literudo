@@ -35,6 +35,5 @@ This version (Next 15.5, App Router) has breaking changes — APIs, conventions,
 
 - Spanish everywhere: UI strings, code comments, commit messages (`feat: ...`)
 - MUI v9 + Emotion is app-wide: theme in `src/theme.ts`, wrapped by `src/components/Providers.tsx` in the root layout; heavier in the `/admin` backoffice. `next.config.ts` sets `experimental.optimizePackageImports` for MUI to keep dev compiles fast — keep it
-- `src/app/(dashboard)/` (`/mis-escritos`, `/nuevo-envio`) is mock content from `src/lib/mock-store.ts`, not wired to Supabase
 - ESLint is flat config (`eslint.config.mjs`): `no-explicit-any` off, unused vars warn
 - Branches: `main`, `master`, `nueva-ui` (currently checked out)

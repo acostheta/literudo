@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getCurrentUser } from "@/lib/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PostEngagement from "@/components/engagement/PostEngagement";
@@ -94,7 +94,7 @@ async function fetchEngagement(
   }
 
   const allIds = [...postIds, ...galleryIds];
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (user && allIds.length) {
     jobs.push(
       supabase
@@ -301,16 +301,8 @@ export default function Home() {
               Aún no hay publicaciones
             </Typography>
             <Typography sx={{ fontStyle: "italic", color: "var(--foreground-muted)", maxWidth: 440, mx: "auto" }}>
-              No hay publicaciones todavía. Vuelve pronto o envía tu propio escrito.
+              No hay publicaciones todavía. Vuelve pronto.
             </Typography>
-            <Button
-              component={Link}
-              href="/nuevo-envio"
-              variant="outlined"
-              sx={{ mt: 3, borderColor: "var(--primary)", color: "var(--primary)" }}
-            >
-              Enviar escrito
-            </Button>
           </Box>
         ) : (
           <Stack spacing={{ xs: 3, md: 4 }}>

@@ -148,19 +148,6 @@ export default function Footer() {
                   Galería
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/nuevo-envio"
-                  style={{
-                    color: "#e2d5c7",
-                    fontSize: "0.9rem",
-                    textDecoration: "none",
-                    transition: "color 0.2s",
-                  }}
-                >
-                  Enviar escrito
-                </Link>
-              </li>
             </ul>
           </div>
 

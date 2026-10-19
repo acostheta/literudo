@@ -70,7 +70,7 @@ export default function PasswordRecoveryWizard({ onSuccess }: PasswordRecoveryWi
       email: email.trim(),
       options: {
         shouldCreateUser: false,
-        emailRedirectTo: `${siteUrl}/reset-password`,
+        emailRedirectTo: `${siteUrl}/login`,
       },
     });
     setLoading(false);

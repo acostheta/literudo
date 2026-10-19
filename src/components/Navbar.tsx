@@ -11,7 +11,7 @@ import {
   AdminPanelSettings,
   PersonOutlined,
 } from "@mui/icons-material";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getCurrentUser } from "@/lib/supabase/client";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -20,9 +20,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-    });
+    getCurrentUser().then(setUser);
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user || null);

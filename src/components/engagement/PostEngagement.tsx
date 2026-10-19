@@ -8,7 +8,7 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutlined";
 import ShareIcon from "@mui/icons-material/Share";
 import CheckIcon from "@mui/icons-material/Check";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getCurrentUser } from "@/lib/supabase/client";
 
 interface PostEngagementProps {
   targetId: string;
@@ -90,10 +90,10 @@ export default function PostEngagement({
     if (commentCount !== undefined && likeCount !== undefined) return;
 
     (async () => {
-      const [c, r, { data: { user } }] = await Promise.all([
+      const [c, r, user] = await Promise.all([
         supabase.rpc("get_comment_count", { p_post_id: targetId, p_target_type: targetType }),
         supabase.rpc("get_reaction_count", { p_post_id: targetId, p_target_type: targetType }),
-        supabase.auth.getUser(),
+        getCurrentUser(),
       ]);
       if (typeof c.data === "number") setComments(c.data);
       if (typeof r.data === "number") setLikes(r.data);

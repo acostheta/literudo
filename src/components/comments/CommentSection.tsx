@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getCurrentUser } from "@/lib/supabase/client";
 import {
   Box,
   Typography,
@@ -45,9 +45,7 @@ export default function CommentSection({ postId, targetType = "post" }: CommentS
   const supabase = createClient();
 
   const fetchUser = useCallback(async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (user) {
       setCurrentUser(user);

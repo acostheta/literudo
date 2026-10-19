@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PostCard from "@/components/PostCard";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getCurrentUser } from "@/lib/supabase/client";
 import {
   Box,
   Container,
@@ -59,9 +59,9 @@ export default function PostsPage() {
 
       if (!error && data && data.length > 0) {
         const ids = data.map((p) => p.id);
-        const [{ data: counts }, { data: { user } }] = await Promise.all([
+        const [{ data: counts }, user] = await Promise.all([
           supabase.rpc("get_counts", { p_target_ids: ids, p_target_type: "post" }),
-          supabase.auth.getUser(),
+          getCurrentUser(),
         ]);
         const countMap = new Map<any, any>((counts || []).map((r: any) => [r.item_id, r]));
         const likedSet = new Set<string>();
