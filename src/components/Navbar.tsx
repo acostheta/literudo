@@ -142,25 +142,11 @@ export default function Navbar() {
                 color: "inherit",
               }}
             >
-              <div
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "#fdfbf7",
-                  border: "1px solid var(--border)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  boxShadow: "0 2px 4px rgba(60, 40, 25, 0.08)",
-                }}
-              >
-                <img
-                  src="/logo_literudo.png"
-                  alt="Literudo"
-                  style={{ width: "24px", height: "24px", objectFit: "contain" }}
-                />
-              </div>
+              <img
+                src="/logo_literudo.png"
+                alt="Literudo"
+                style={{ width: "44px", height: "44px", objectFit: "contain" }}
+              />
 
               <div>
                 <span

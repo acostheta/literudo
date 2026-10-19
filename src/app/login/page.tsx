@@ -147,25 +147,11 @@ export default function LoginPage() {
             
             <Box sx={{ width: "100%", display: "flex", justifyContent: "center", mb: 0 }}>
               <Box
-                sx={{
-                  width: 100,
-                  height: 100,
-                  borderRadius: "50%",
-                  border: "2px solid #d8c8b4",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "#fdfbf7",
-                  boxShadow: "0 4px 12px rgba(60, 40, 25, 0.08)",
-                }}
-              >
-                <Box 
-                  component="img"
-                  src="/logo_literudo.png"
-                  alt="Literudo"
-                  sx={{ width: 65, height: 65, objectFit: "contain" }}
-                />
-              </Box>
+                component="img"
+                src="/logo_literudo.png"
+                alt="Literudo"
+                sx={{ width: 120, height: 120, objectFit: "contain" }}
+              />
             </Box>
             
             <Box sx={{ width: "100%", textAlign: "center" }}>
