@@ -6,17 +6,55 @@ import { usePathname } from "next/navigation";
 import NavDrawer from "./NavDrawer";
 import {
   Menu as MenuIcon,
-  AutoStories,
-  CollectionsBookmark,
   AdminPanelSettings,
   PersonOutlined,
+  ExpandMore,
+  Logout as LogoutIcon,
 } from "@mui/icons-material";
+import { Menu, MenuItem, Avatar, Box, Divider, Stack, Typography } from "@mui/material";
 import { createClient, getCurrentUser } from "@/lib/supabase/client";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [profileName, setProfileName] = useState<string | null>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+
+  const closeMenu = () => setMenuAnchor(null);
+
+  const handleSignOut = async () => {
+    closeMenu();
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    document.cookie = "literudo_remember=; path=/; max-age=0; samesite=lax";
+    window.location.href = "/login";
+  };
+
+  useEffect(() => {
+    if (!user) {
+      setProfileName(null);
+      setProfileAvatar(null);
+      return;
+    }
+    let active = true;
+    createClient()
+      .from("profiles")
+      .select("name, avatar_url")
+      .eq("id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (!active) return;
+        setProfileName(data?.name ?? null);
+        setProfileAvatar(data?.avatar_url ?? null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  const displayName = profileName || user?.email?.split("@")[0] || "Mi cuenta";
 
   useEffect(() => {
     const supabase = createClient();
@@ -32,9 +70,12 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: "/", label: "Inicio", icon: <AutoStories sx={{ fontSize: 18 }} /> },
-    { href: "/posts", label: "Artículos", icon: <CollectionsBookmark sx={{ fontSize: 18 }} /> },
-    { href: "/gallery", label: "Galería", icon: <CollectionsBookmark sx={{ fontSize: 18 }} /> },
+    { href: "/", label: "Inicio" },
+    { href: "/posts", label: "Artículos" },
+    { href: "/gallery", label: "Galería" },
+    { href: "/noticias", label: "Noticias" },
+    { href: "/sobre-nosotros", label: "Sobre Nosotros" },
+    { href: "/contacto", label: "Contáctanos" },
   ];
 
   return (
@@ -62,8 +103,8 @@ export default function Navbar() {
 
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
             alignItems: "center",
             maxWidth: "1200px",
             margin: "0 auto",
@@ -71,10 +112,11 @@ export default function Navbar() {
           }}
         >
           {/* Logo y Menú Móvil */}
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", justifySelf: "start" }}>
             <button
               onClick={() => setDrawerOpen(true)}
               aria-label="Abrir menú"
+              className="mobile-menu"
               style={{
                 background: "transparent",
                 border: "1px solid var(--border)",
@@ -82,7 +124,6 @@ export default function Navbar() {
                 cursor: "pointer",
                 padding: "0.35rem 0.5rem",
                 color: "var(--foreground)",
-                display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 transition: "all 0.2s",
@@ -157,7 +198,7 @@ export default function Navbar() {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "2rem",
+              gap: "1.5rem",
             }}
             className="desktop-nav"
           >
@@ -202,29 +243,107 @@ export default function Navbar() {
           </nav>
 
           {/* Acciones del Lector / Acceso */}
-          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", justifySelf: "end" }}>
             {user ? (
               <>
-                <Link
-                  href="/admin"
+                <button
+                  onClick={(e) => setMenuAnchor(e.currentTarget)}
+                  aria-haspopup="menu"
+                  aria-expanded={Boolean(menuAnchor)}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "0.35rem",
-                    padding: "0.45rem 1rem",
+                    gap: "0.4rem",
+                    padding: "0.45rem 0.9rem",
                     background: "var(--primary-faint)",
                     color: "var(--primary)",
                     borderRadius: "4px",
                     fontSize: "0.85rem",
                     fontFamily: "var(--font-sans)",
                     fontWeight: 600,
-                    textDecoration: "none",
                     border: "1px solid rgba(107, 29, 34, 0.3)",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
                   }}
                 >
-                  <AdminPanelSettings sx={{ fontSize: 17 }} />
-                  <span>Panel</span>
-                </Link>
+                  <Avatar
+                    src={profileAvatar ?? undefined}
+                    alt={displayName}
+                    sx={{
+                      width: 26,
+                      height: 26,
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      bgcolor: "var(--primary)",
+                      color: "#fcf8f2",
+                      border: "1px solid rgba(107, 29, 34, 0.25)",
+                    }}
+                  >
+                    {displayName.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <span>{displayName}</span>
+                  <ExpandMore sx={{ fontSize: 16 }} />
+                </button>
+
+                <Menu
+                  anchorEl={menuAnchor}
+                  open={Boolean(menuAnchor)}
+                  onClose={closeMenu}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  transformOrigin={{ vertical: "top", horizontal: "right" }}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        mt: 1,
+                        minWidth: 190,
+                        bgcolor: "var(--background-card)",
+                        border: "1px solid var(--border)",
+                      },
+                    },
+                  }}
+                >
+                  <Box sx={{ px: 2, py: 1.5, minWidth: 220 }}>
+                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                      <Avatar
+                        src={profileAvatar ?? undefined}
+                        alt={displayName}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: "var(--primary)",
+                          color: "#fcf8f2",
+                          fontWeight: 700,
+                          border: "1px solid rgba(107, 29, 34, 0.25)",
+                        }}
+                      >
+                        {displayName.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="body2" noWrap sx={{ fontWeight: 700 }}>
+                          {displayName}
+                        </Typography>
+                        {user.email && (
+                          <Typography variant="caption" noWrap sx={{ color: "var(--foreground-muted)", display: "block" }}>
+                            {user.email}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Stack>
+                  </Box>
+                  <Divider sx={{ mb: 0.5 }} />
+                  <MenuItem component={Link} href="/perfil" onClick={closeMenu}>
+                    <PersonOutlined sx={{ fontSize: 18, mr: 1.5, color: "var(--foreground-muted)" }} />
+                    Mi perfil
+                  </MenuItem>
+                  <MenuItem component={Link} href="/admin" onClick={closeMenu}>
+                    <AdminPanelSettings sx={{ fontSize: 18, mr: 1.5, color: "var(--foreground-muted)" }} />
+                    Panel
+                  </MenuItem>
+                  <MenuItem onClick={handleSignOut}>
+                    <LogoutIcon sx={{ fontSize: 18, mr: 1.5, color: "var(--foreground-muted)" }} />
+                    Cerrar Sesión
+                  </MenuItem>
+                </Menu>
               </>
             ) : (
               <>
@@ -275,9 +394,15 @@ export default function Navbar() {
         </div>
 
         <style jsx>{`
-          @media (max-width: 768px) {
+          .mobile-menu {
+            display: none;
+          }
+          @media (max-width: 1024px) {
             .desktop-nav {
               display: none !important;
+            }
+            .mobile-menu {
+              display: flex;
             }
           }
         `}</style>

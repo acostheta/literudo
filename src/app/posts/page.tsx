@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import PostCard from "@/components/PostCard";
+import FeedCard from "@/components/FeedCard";
 import { createClient, getCurrentUser } from "@/lib/supabase/client";
 import {
   Box,
@@ -268,17 +268,29 @@ export default function PostsPage() {
             </Typography>
           </Box>
         ) : (
-          <div
-            style={{
+          <Box
+            sx={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "2rem",
+              gap: 4,
             }}
           >
             {filteredPosts.map((post) => (
-              <PostCard key={post.slug} {...post} />
+              <FeedCard
+                compact
+                key={post.slug}
+                id={post.id}
+                type="post"
+                title={post.title}
+                slug={post.slug}
+                text={post.excerpt}
+                date={post.date}
+                commentCount={post.comment_count}
+                likeCount={post.like_count}
+                liked={post.liked}
+              />
             ))}
-          </div>
+          </Box>
         )}
       </Container>
 

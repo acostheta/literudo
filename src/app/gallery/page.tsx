@@ -4,8 +4,9 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, getCurrentUser } from "@/lib/supabase/client";
 import { GalleryPost } from "@/lib/types/gallery";
+import FeedCard from "@/components/FeedCard";
 import {
   Box,
   Container,
@@ -65,11 +66,31 @@ export default function GalleryListPage() {
           countMap[emb.gallery_post_id] = (countMap[emb.gallery_post_id] || 0) + 1;
         });
 
+        const [{ data: counts }, user] = await Promise.all([
+          supabaseRef.current.rpc("get_counts", { p_target_ids: postIds, p_target_type: "gallery" }),
+          getCurrentUser(),
+        ]);
+        const engagementMap = new Map<string, any>();
+        ((counts || []) as any[]).forEach((r) => engagementMap.set(r.item_id, r));
+        const likedSet = new Set<string>();
+        if (user) {
+          const { data: mine } = await supabaseRef.current
+            .from("reactions")
+            .select("target_id")
+            .eq("user_id", user.id)
+            .eq("target_type", "gallery")
+            .in("target_id", postIds);
+          (mine || []).forEach((r: any) => likedSet.add(r.target_id));
+        }
+
         const enriched = posts.map((p) => ({
           ...p,
           profiles: { name: profileMap[p.author_id] || "Anónimo" },
           gallery_images: coverMap[p.id] ? [{ image_url: coverMap[p.id] }] : [],
           _itemCount: countMap[p.id] || 0,
+          comment_count: engagementMap.get(p.id)?.comments_n ?? 0,
+          like_count: engagementMap.get(p.id)?.likes_n ?? 0,
+          liked: likedSet.has(p.id),
         }));
 
         setGalleries(enriched);
@@ -177,141 +198,40 @@ export default function GalleryListPage() {
             </Typography>
           </Box>
         ) : (
-          <div
-            style={{
+          <Box
+            sx={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-              gap: "2.5rem",
+              gap: 5,
             }}
           >
             {galleries.map((gallery) => {
+              const g = gallery as any;
               const coverImage = gallery.gallery_images?.[0]?.image_url;
-              const itemCount = (gallery as any)._itemCount || 0;
 
               return (
-                <Link
+                <FeedCard
+                  compact
                   key={gallery.id}
-                  href={`/gallery/${gallery.slug}`}
-                  style={{
-                    display: "block",
-                    textDecoration: "none",
-                    color: "inherit",
-                  }}
-                >
-                  <article
-                    className="book-card"
-                    style={{
-                      height: "100%",
-                      backgroundColor: "var(--background-card)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "4px",
-                      overflow: "hidden",
-                      display: "flex",
-                      flexDirection: "column",
-                      boxShadow: "var(--card-shadow)",
-                      transition: "var(--transition)",
-                    }}
-                  >
-                    {/* Cuadro / Marco de Imagen */}
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "230px",
-                        backgroundColor: "#eee4d3",
-                        backgroundImage: coverImage ? `url(${coverImage})` : "none",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        borderBottom: "1px solid var(--border)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        position: "relative",
-                      }}
-                    >
-                      {!coverImage && (
-                        <PhotoCamera sx={{ color: "var(--accent)", fontSize: 40, opacity: 0.4 }} />
-                      )}
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: "10px",
-                          right: "10px",
-                          background: "rgba(36, 24, 18, 0.75)",
-                          backdropFilter: "blur(4px)",
-                          color: "#fcf8f2",
-                          fontSize: "0.72rem",
-                          fontFamily: "var(--font-sans)",
-                          fontWeight: 600,
-                          padding: "3px 8px",
-                          borderRadius: "3px",
-                        }}
-                      >
-                        {itemCount} {itemCount === 1 ? "elemento" : "elementos"}
-                      </div>
-                    </div>
-
-                    {/* Ficha descriptiva */}
-                    <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", flex: 1 }}>
-                      <h2
-                        style={{
-                          fontFamily: "var(--font-cinzel), var(--font-playfair), Georgia, serif",
-                          fontSize: "1.35rem",
-                          fontWeight: 700,
-                          lineHeight: 1.3,
-                          marginBottom: "0.6rem",
-                          color: "var(--foreground)",
-                        }}
-                      >
-                        {gallery.title}
-                      </h2>
-
-                      {gallery.description && (
-                        <p
-                          style={{
-                            fontFamily: "var(--font-serif)",
-                            fontSize: "0.92rem",
-                            color: "var(--foreground-muted)",
-                            lineHeight: 1.6,
-                            marginBottom: "1.2rem",
-                            fontStyle: "italic",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                          }}
-                        >
-                          {gallery.description}
-                        </p>
-                      )}
-
-                      <div
-                        style={{
-                          marginTop: "auto",
-                          paddingTop: "0.8rem",
-                          borderTop: "1px solid var(--border-light)",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          fontSize: "0.8rem",
-                          color: "var(--foreground-faint)",
-                          fontFamily: "var(--font-sans)",
-                        }}
-                      >
-                        <span>{gallery.profiles?.name || "Anónimo"}</span>
-                        <span>
-                          {new Date(gallery.created_at).toLocaleDateString("es-ES", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                  </article>
-                </Link>
+                  id={gallery.id}
+                  type="gallery"
+                  title={gallery.title}
+                  slug={gallery.slug}
+                  text={gallery.description || "Imágenes y videos de la comunidad universitaria."}
+                  date={new Date(gallery.created_at).toLocaleDateString("es-ES", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                  coverUrl={coverImage}
+                  itemCount={g._itemCount || 0}
+                  commentCount={g.comment_count}
+                  likeCount={g.like_count}
+                  liked={g.liked}
+                />
               );
             })}
-          </div>
+          </Box>
         )}
       </Container>
 
