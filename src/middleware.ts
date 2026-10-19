@@ -1,9 +1,16 @@
 import { type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { updateSession, redirectIfSignedIn } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Rutas de Auth: con sesión abierta, a Inicio
+  if (pathname.startsWith('/login')) {
+    return await redirectIfSignedIn(request)
+  }
+
   // Only apply to admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/admin')) {
     return await updateSession(request)
   }
   return
