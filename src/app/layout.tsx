@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   title: "Literudo Online",
   description: "Blog de la Agrupación Estudiantil Literudo. Artículos, poesía, narrativa y galería de imágenes y videos.",
   icons: {
-    icon: "/Logo_UDO.svg",
-    apple: "/Logo_UDO.svg",
+    icon: "/logo_literudo.png",
+    apple: "/logo_literudo.png",
   },
 };
 

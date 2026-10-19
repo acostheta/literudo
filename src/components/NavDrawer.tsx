@@ -75,8 +75,8 @@ export default function NavDrawer({ open, onClose }: NavDrawerProps) {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box
             component="img"
-            src="/Logo_UDO.svg"
-            alt="Logo UDO"
+            src="/logo_literudo.png"
+            alt="Literudo"
             sx={{ width: 32, height: 32, filter: "brightness(1.1)" }}
           />
           <Box>

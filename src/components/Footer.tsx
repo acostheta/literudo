@@ -42,7 +42,7 @@ export default function Footer() {
                   border: "1px solid #d49b38",
                 }}
               >
-                <img src="/Logo_UDO.svg" alt="Literudo" style={{ width: "24px", height: "24px" }} />
+                <img src="/logo_literudo.png" alt="Literudo" style={{ width: "24px", height: "24px" }} />
               </div>
               <div>
                 <span

@@ -156,7 +156,7 @@ export default function Navbar() {
                 }}
               >
                 <img
-                  src="/Logo_UDO.svg"
+                  src="/logo_literudo.png"
                   alt="Literudo"
                   style={{ width: "24px", height: "24px", objectFit: "contain" }}
                 />
@@ -295,9 +295,12 @@ export default function Navbar() {
                     paper: {
                       sx: {
                         mt: 1,
-                        minWidth: 190,
-                        bgcolor: "var(--background-card)",
+                        minWidth: 220,
+                        bgcolor: "#ffffff",
+                        backgroundImage: "none",
                         border: "1px solid var(--border)",
+                        boxShadow:
+                          "0 10px 30px -6px rgba(60, 40, 25, 0.28), 0 2px 6px rgba(60, 40, 25, 0.12)",
                       },
                     },
                   }}

@@ -161,8 +161,8 @@ export default function LoginPage() {
               >
                 <Box 
                   component="img"
-                  src="/Logo_UDO.svg"
-                  alt="Logo UDO"
+                  src="/logo_literudo.png"
+                  alt="Literudo"
                   sx={{ width: 65, height: 65, objectFit: "contain" }}
                 />
               </Box>

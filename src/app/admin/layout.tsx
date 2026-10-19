@@ -62,8 +62,8 @@ function DrawerContent({ collapsed, toggleDrawer, pathname, onNavigate }: {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box
               component="img"
-              src="/Logo_UDO.svg"
-              alt="Logo UDO"
+              src="/logo_literudo.png"
+              alt="Literudo"
               sx={{ width: 40, height: 40, flexShrink: 0 }}
             />
             <Box>
@@ -80,8 +80,8 @@ function DrawerContent({ collapsed, toggleDrawer, pathname, onNavigate }: {
         {collapsed && (
           <Box
             component="img"
-            src="/Logo_UDO.svg"
-            alt="Logo UDO"
+            src="/logo_literudo.png"
+            alt="Literudo"
             sx={{ width: 40, height: 40 }}
           />
         )}
