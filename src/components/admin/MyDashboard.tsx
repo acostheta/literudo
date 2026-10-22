@@ -23,17 +23,7 @@ import {
   Image as ImageIcon,
   Edit as EditIcon,
 } from "@mui/icons-material";
-
-interface Profile {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  avatar_url?: string | null;
-  about_me?: string | null;
-  status: string;
-  created_at: string;
-}
+import MyProfileModal, { MyProfile } from "@/components/admin/MyProfileModal";
 
 interface Item {
   id: string;
@@ -49,9 +39,10 @@ const formatDate = (value: string) =>
 
 export default function MyDashboard() {
   const supabase = createClient();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<MyProfile | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
+  const [openEdit, setOpenEdit] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,7 +72,7 @@ export default function MyDashboard() {
         href: `/admin/gallery/edit/${g.id}`,
       }));
 
-      setProfile(profileData as Profile | null);
+      setProfile(profileData as MyProfile | null);
       setItems([...articles, ...gallery].sort((a, b) => b.created_at.localeCompare(a.created_at)));
       setLoading(false);
     };
@@ -119,6 +110,15 @@ export default function MyDashboard() {
 
   return (
     <Box sx={{ py: { xs: 1, md: 2 } }}>
+      {profile && (
+        <MyProfileModal
+          open={openEdit}
+          onClose={() => setOpenEdit(false)}
+          profile={profile}
+          onSaved={setProfile}
+        />
+      )}
+
       <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, letterSpacing: -1, fontSize: { xs: "1.5rem", md: "2.125rem" } }}>
         Hola, {profile?.name || "usuario"}
       </Typography>
@@ -157,9 +157,13 @@ export default function MyDashboard() {
               {profile?.about_me || "Aún no has escrito nada sobre ti."}
             </Typography>
 
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Miembro desde {profile ? formatDate(profile.created_at) : "—"}
             </Typography>
+
+            <Button variant="outlined" startIcon={<EditIcon />} onClick={() => setOpenEdit(true)} disabled={!profile} sx={{ borderRadius: 0 }}>
+              Editar mis datos
+            </Button>
           </Paper>
         </Grid>
 
