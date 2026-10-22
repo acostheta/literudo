@@ -1,6 +1,15 @@
 -- Cada usuario puede editar su propio perfil.
 -- Solo el Administrador puede cambiar rol, estatus, correo o id.
 
+-- Eliminar politicas abiertas que permitian modificar cualquier perfil o articulo.
+DROP POLICY IF EXISTS "Allow all for now" ON profiles;
+DROP POLICY IF EXISTS "Authenticated users can do everything" ON posts;
+
+DROP POLICY IF EXISTS "Profiles public read" ON profiles;
+CREATE POLICY "Profiles public read" ON profiles
+  FOR SELECT
+  USING (true);
+
 DROP POLICY IF EXISTS "Profiles self update" ON profiles;
 CREATE POLICY "Profiles self update" ON profiles
   FOR UPDATE
