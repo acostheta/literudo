@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import MyDashboard from "@/components/admin/MyDashboard";
 import {
   Box,
   Grid,
@@ -34,6 +35,35 @@ interface Stats {
 }
 
 export default function DashboardPage() {
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      setRole(profile?.role ?? "Usuario");
+    };
+    fetchRole();
+  }, []);
+
+  if (role === null) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", p: 10 }}>
+        <CircularProgress color="inherit" />
+      </Box>
+    );
+  }
+
+  return role === "Administrador" ? <AdminDashboard /> : <MyDashboard />;
+}
+
+function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();

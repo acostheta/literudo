@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryImage, GalleryEmbed } from "@/lib/types/gallery";
+import { canManageContent } from "@/lib/permissions";
 import {
   Box,
   Container,
@@ -24,6 +25,7 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
   const [initialImages, setInitialImages] = useState<GalleryImage[]>([]);
   const [initialEmbeds, setInitialEmbeds] = useState<GalleryEmbed[]>([]);
   const [initialStatus, setInitialStatus] = useState("borrador");
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     const fetchGallery = async () => {
@@ -33,7 +35,9 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
         .eq("id", id)
         .single();
 
-      if (gallery) {
+      if (gallery && !(await canManageContent(supabase, gallery.author_id))) {
+        setForbidden(true);
+      } else if (gallery) {
         setInitialTitle(gallery.title);
         setInitialDescription(gallery.description || "");
         setInitialStatus(gallery.status);
@@ -64,6 +68,14 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
     return (
       <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         <CircularProgress color="inherit" size={30} />
+      </Box>
+    );
+  }
+
+  if (forbidden) {
+    return (
+      <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Typography>No tienes permiso para editar esta galería.</Typography>
       </Box>
     );
   }

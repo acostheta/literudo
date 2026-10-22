@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { canManageContent } from "@/lib/permissions";
 import {
   Box,
   Container,
@@ -47,7 +48,9 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
         .eq("id", id)
         .single();
 
-      if (data) {
+      if (data && !(await canManageContent(supabase, data.author_id))) {
+        setError("No tienes permiso para editar este artículo.");
+      } else if (data) {
         setTitle(data.title);
         setSlug(data.slug);
         setExcerpt(data.excerpt || "");

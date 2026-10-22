@@ -1,8 +1,9 @@
 "use client";
 
-import { ReactNode, useState, useCallback } from "react";
+import { ReactNode, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   Box,
   Drawer,
@@ -37,15 +38,16 @@ const COLLAPSED_DRAWER_WIDTH = 80;
 
 const navItems = [
   { name: "Dashboard", href: "/admin", icon: <DashboardIcon /> },
-  { name: "Usuarios", href: "/admin/users", icon: <PeopleIcon /> },
+  { name: "Usuarios", href: "/admin/users", icon: <PeopleIcon />, adminOnly: true },
   { name: "Artículos", href: "/admin/posts", icon: <ArticleIcon /> },
   { name: "Galería", href: "/admin/gallery", icon: <ImageIcon /> },
 ];
 
-function DrawerContent({ collapsed, toggleDrawer, pathname, onNavigate }: {
+function DrawerContent({ collapsed, toggleDrawer, pathname, isAdmin, onNavigate }: {
   collapsed: boolean;
   toggleDrawer: () => void;
   pathname: string;
+  isAdmin: boolean;
   onNavigate?: () => void;
 }) {
   return (
@@ -94,7 +96,7 @@ function DrawerContent({ collapsed, toggleDrawer, pathname, onNavigate }: {
       <Divider sx={{ bgcolor: "rgba(255,255,255,0.1)" }} />
 
       <List sx={{ mt: 2, p: 0 }}>
-        {navItems.map((item) => (
+        {navItems.filter((item) => !item.adminOnly || isAdmin).map((item) => (
           <ListItem key={item.href} disablePadding sx={{ display: 'block' }}>
             <Tooltip title={collapsed ? item.name : ""} placement="right">
               <ListItemButton
@@ -216,6 +218,32 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [roleLoaded, setRoleLoaded] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const loadRole = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      setIsAdmin(profile?.role === "Administrador");
+      setRoleLoaded(true);
+    };
+    loadRole();
+  }, []);
+
+  const restrictedRoute = pathname.startsWith("/admin/users");
+  const canViewRoute = !restrictedRoute || isAdmin;
+
+  useEffect(() => {
+    if (roleLoaded && !canViewRoute) router.replace("/admin/posts");
+  }, [roleLoaded, canViewRoute, router]);
 
   const toggleDrawer = useCallback(() => {
     if (isMobile) {
@@ -295,6 +323,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             collapsed={false}
             toggleDrawer={handleDrawerToggle}
             pathname={pathname}
+            isAdmin={isAdmin}
             onNavigate={handleDrawerToggle}
           />
         </Drawer>
@@ -321,6 +350,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             collapsed={collapsed}
             toggleDrawer={toggleDrawer}
             pathname={pathname}
+            isAdmin={isAdmin}
           />
         </Drawer>
       )}
@@ -339,7 +369,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           }),
         }}
       >
-        {children}
+        {canViewRoute ? children : null}
       </Box>
     </Box>
   );
