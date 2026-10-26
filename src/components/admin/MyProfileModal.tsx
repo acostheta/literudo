@@ -75,26 +75,30 @@ export default function MyProfileModal({ open, onClose, profile, onSaved }: MyPr
     setSaving(true);
     setError(null);
 
-    const { error: saveError } = await supabase
-      .from("profiles")
-      .update({
-        name: name.trim(),
-        about_me: aboutMe.trim(),
-        avatar_url: avatarUrl,
-      })
-      .eq("id", profile.id);
+    try {
+      const { error: saveError } = await supabase
+        .from("profiles")
+        .update({
+          name: name.trim(),
+          about_me: aboutMe.trim(),
+          avatar_url: avatarUrl,
+        })
+        .eq("id", profile.id);
 
-    setSaving(false);
+      if (saveError) {
+        setError(saveError.message);
+        return;
+      }
 
-    if (saveError) {
-      setError(saveError.message);
-      return;
+      // La columna email está revocada para el cliente: el perfil actualizado se
+      // arma con lo que se acaba de guardar.
+      onSaved({ ...profile, name: name.trim(), about_me: aboutMe.trim(), avatar_url: avatarUrl });
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "No se pudo guardar el perfil.");
+    } finally {
+      setSaving(false);
     }
-
-    // La columna email está revocada para el cliente: el perfil actualizado se
-    // arma con lo que se acaba de guardar.
-    onSaved({ ...profile, name: name.trim(), about_me: aboutMe.trim(), avatar_url: avatarUrl });
-    onClose();
   };
 
   return (

@@ -58,22 +58,28 @@ export default function NewPostPage() {
     setLoading(true);
     setError(null);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
 
-    const { error: saveError } = await supabase.from("posts").insert({
-      title,
-      slug,
-      excerpt,
-      content,
-      author_id: user?.id,
-      status,
-    });
+      const { error: saveError } = await supabase.from("posts").insert({
+        title,
+        slug,
+        excerpt,
+        content,
+        author_id: user?.id,
+        status,
+      });
 
-    if (saveError) {
-      setError(saveError.message);
-      setLoading(false);
-    } else {
+      if (saveError) {
+        setError(saveError.message);
+        return;
+      }
+
       router.push("/admin/posts");
+    } catch (err: any) {
+      setError(err.message || "No se pudo guardar el artículo.");
+    } finally {
+      setLoading(false);
     }
   };
 

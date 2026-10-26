@@ -58,8 +58,21 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     setLoading(true);
     const { data, error } = await supabase.rpc("admin_list_profiles");
-    if (error) setError(error.message);
-    else setUsers((data as UserProfile[]) || []);
+
+    if (!error) {
+      setUsers((data as UserProfile[]) || []);
+    } else {
+      // shortcut: si la migración de RLS aún no está aplicada no existe el RPC;
+      // el listado funciona sin correo. Quitar cuando todos los entornos estén.
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("profiles")
+        .select("id, name, role, status, avatar_url, about_me, created_at")
+        .order("created_at", { ascending: false });
+
+      if (fallbackError) setError(fallbackError.message);
+      else setUsers(((fallback || []) as Omit<UserProfile, "email">[]).map((u) => ({ ...u, email: "" })));
+    }
+
     setLoading(false);
   };
 

@@ -53,28 +53,32 @@ export default function EmbedListManager({
     setLoading(true);
     setError("");
 
-    const resolvedEmbedUrl = await getEmbedUrl(url, platform);
-    if (!resolvedEmbedUrl) {
-      setError("No se pudo resolver el enlace. Verifica que sea correcto.");
+    try {
+      const resolvedEmbedUrl = await getEmbedUrl(url, platform);
+      if (!resolvedEmbedUrl) {
+        setError("No se pudo resolver el enlace. Verifica que sea correcto.");
+        return;
+      }
+
+      const newEmbed: GalleryEmbed = {
+        id: `temp-${Date.now()}`,
+        gallery_post_id: "",
+        platform,
+        url,
+        embed_url: resolvedEmbedUrl,
+        caption: null,
+        description: null,
+        sort_order: embeds.length,
+        created_at: new Date().toISOString(),
+      };
+
+      onChange([...embeds, newEmbed]);
+      setUrl("");
+    } catch (err: any) {
+      setError(err.message || "No se pudo agregar el enlace.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const newEmbed: GalleryEmbed = {
-      id: `temp-${Date.now()}`,
-      gallery_post_id: "",
-      platform,
-      url,
-      embed_url: resolvedEmbedUrl,
-      caption: null,
-      description: null,
-      sort_order: embeds.length,
-      created_at: new Date().toISOString(),
-    };
-
-    onChange([...embeds, newEmbed]);
-    setUrl("");
-    setLoading(false);
   };
 
   const handleRemove = (id: string) => {

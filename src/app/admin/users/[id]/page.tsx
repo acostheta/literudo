@@ -38,10 +38,19 @@ export default async function UserDetailPage({
     // revocada para el cliente normal.
     const { data, error } = await supabase.rpc("admin_list_profiles");
 
-    if (error) {
-      errorMsg = error.message;
-    } else {
+    if (!error) {
       user = (data as any[] | null)?.find((p) => p.id === id) ?? null;
+    } else {
+      // shortcut: sin la migración de RLS aplicada no existe el RPC; la ficha
+      // funciona sin correo. Quitar cuando todos los entornos estén migrados.
+      const { data: fallback, error: fallbackError } = await supabase
+        .from("profiles")
+        .select("id, name, role, status, avatar_url, about_me, created_at")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (fallbackError) errorMsg = fallbackError.message;
+      else user = fallback ? { ...fallback, email: "" } : null;
     }
   } catch (e: any) {
     errorMsg = e.message;

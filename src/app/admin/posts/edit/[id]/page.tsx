@@ -74,23 +74,29 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     setSaving(true);
     setError(null);
 
-    const { error: saveError } = await supabase
-      .from("posts")
-      .update({
-        title,
-        slug,
-        excerpt,
-        content,
-        status,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
+    try {
+      const { error: saveError } = await supabase
+        .from("posts")
+        .update({
+          title,
+          slug,
+          excerpt,
+          content,
+          status,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
 
-    if (saveError) {
-      setError(saveError.message);
-      setSaving(false);
-    } else {
+      if (saveError) {
+        setError(saveError.message);
+        return;
+      }
+
       router.push("/admin/posts");
+    } catch (err: any) {
+      setError(err.message || "No se pudo guardar el artículo.");
+    } finally {
+      setSaving(false);
     }
   };
 

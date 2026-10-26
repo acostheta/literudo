@@ -24,6 +24,7 @@ export default function CommentForm({
 }: CommentFormProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,26 +33,38 @@ export default function CommentForm({
     if (!trimmed) return;
 
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    setError(null);
 
-    if (!user) return;
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("comments").insert({
-      target_id: postId,
-      target_type: targetType,
-      user_id: user.id,
-      parent_id: parentId,
-      content: trimmed,
-    });
+      if (!user) {
+        setError("Tu sesión expiró. Vuelve a iniciar sesión.");
+        return;
+      }
 
-    if (!error) {
+      const { error } = await supabase.from("comments").insert({
+        target_id: postId,
+        target_type: targetType,
+        user_id: user.id,
+        parent_id: parentId,
+        content: trimmed,
+      });
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
       setContent("");
       onSubmit?.();
+    } catch (err: any) {
+      setError(err.message || "No se pudo publicar el comentario.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -85,6 +98,8 @@ export default function CommentForm({
         onKeyDown={handleKeyDown}
         autoFocus={autoFocus}
         disabled={loading}
+        error={!!error}
+        helperText={error ?? undefined}
         variant="outlined"
         sx={{
           "& .MuiOutlinedInput-root": {
