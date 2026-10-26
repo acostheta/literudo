@@ -25,6 +25,7 @@ This version (Next 15.5, App Router) has breaking changes — APIs, conventions,
 - DDL puntual también puede ir por el Supabase MCP, pero una feature va en migración versionada (una aplicada no se edita)
 - Reglas RLS: una política por operación, nunca `FOR ALL`, y las de administrador usan `public.is_admin()`. El correo de `profiles` está revocado para `anon`/`authenticated`: se lee por `mi_perfil()` (propio) o `admin_list_profiles()` (solo Administrador)
 - `posts`/`gallery_posts` usan `author_id = auth.uid()` en alta y en `WITH CHECK`; el `author_id` no se puede reasignar
+- Orden de despliegue: **código primero, migración de RLS después**. El código nuevo tolera el esquema viejo (fallbacks sin correo); al revés, el código viejo hace `select *` sobre `profiles` y se rompe cuando el correo queda revocado
 - Keepalive is intentional two-layer defense (pg_cron heartbeat migration + weekly GH Actions restore) against Supabase Free auto-pause
 
 ## Auth gotchas

@@ -100,6 +100,8 @@ Fecha: 2026-10-26 · Rama: `permissions`.
 
 ### Pendiente
 
+- Orden de despliegue: el código nuevo tolera el esquema viejo (fallbacks sin correo), así que se puede desplegar primero y aplicar la migración de RLS después. Al revés, el código desplegado hoy hace `select *` sobre `profiles` y falla cuando el correo queda revocado.
+
 - **Docker no arranca en esta máquina**: WSL2 responde «la virtualización no está habilitada». Hace falta activar «Plataforma de máquina virtual» + VT-x/AMD-V en BIOS y reiniciar. Hasta entonces `supabase db reset` y `supabase test db` no se pueden ejecutar en local (el job de CI sí los corre).
 - Aplicar las migraciones al proyecto remoto (`supabase db push`) requiere la contraseña de la base o hacerlo desde el dashboard; no hay `SUPABASE_DB_PASSWORD` en `.env.local`.
 - `supabase migration repair --status applied 20260831173130 20260502000000` (y renombrar las versiones ya reconciliadas) antes del primer `db push`.
