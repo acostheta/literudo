@@ -2,11 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { ROLES, STATUS } from "@/lib/permissions";
+import { createUser, updateUser } from "@/app/admin/users/actions";
 import {
+  Alert,
   Box,
   Button,
   TextField,
-  Typography,
   Select,
   MenuItem,
   FormControl,
@@ -43,19 +45,24 @@ interface UserFormModalProps {
 
 export default function UserFormModal({ open, onClose, user, onSuccess }: UserFormModalProps) {
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<UserProfile>({
     name: "",
     email: "",
-    role: "Usuario",
+    role: ROLES.user,
     avatar_url: "",
     about_me: "",
-    status: "activo",
+    status: STATUS.active,
   });
 
   // Update form data when user prop changes (e.g. when opening for edit)
   useEffect(() => {
+    setError(null);
+    setPassword("");
     if (user) {
       setFormData({
         name: user.name,
@@ -69,10 +76,10 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
       setFormData({
         name: "",
         email: "",
-        role: "Usuario",
+        role: ROLES.user,
         avatar_url: "",
         about_me: "",
-        status: "activo",
+        status: STATUS.active,
       });
     }
   }, [user, open]);
@@ -99,7 +106,7 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
 
       setFormData({ ...formData, avatar_url: publicUrl });
     } catch (error: any) {
-      alert("Error al subir el avatar: " + error.message);
+      setError("Error al subir el avatar: " + error.message);
     } finally {
       setUploading(false);
     }
@@ -107,30 +114,39 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (user?.id) {
-      const { data, error } = await supabase
-        .from("profiles")
-        .update(formData)
-        .eq("id", user.id)
-        .select();
+    setSaving(true);
+    setError(null);
 
-      if (error) alert(error.message);
-      else if (data) {
-        onSuccess(data[0]);
-        onClose();
+    try {
+      if (user?.id) {
+        const result = await updateUser(user.id, {
+          name: formData.name,
+          about_me: formData.about_me || "",
+          avatar_url: formData.avatar_url || "",
+          role: formData.role,
+          status: formData.status,
+        });
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        onSuccess({ ...user, ...formData });
+      } else {
+        const result = await createUser({
+          name: formData.name,
+          email: formData.email,
+          password,
+          role: formData.role,
+        });
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        onSuccess(null);
       }
-    } else {
-      const { data, error } = await supabase
-        .from("profiles")
-        .insert([formData])
-        .select();
-
-      if (error) alert(error.message);
-      else if (data) {
-        onSuccess(data[0]);
-        onClose();
-      }
+      onClose();
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -141,6 +157,7 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
       </DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent dividers>
+          {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 0 }} onClose={() => setError(null)}>{error}</Alert>}
           <Stack spacing={4} sx={{ py: 1 }}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ alignItems: "center" }}>
               <Box sx={{ textAlign: 'center' }}>
@@ -156,11 +173,28 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
               <Stack spacing={2} sx={{ flex: 1 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField fullWidth label="Nombre Completo" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
-                  <TextField fullWidth label="Email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={!!user?.id}
+                    helperText={user?.id ? "El correo se cambia desde Supabase Auth." : undefined}
+                    required
+                  />
                 </Stack>
-                <Typography variant="caption" color="text.secondary">
-                  * La contraseña se gestiona de forma segura a través de Supabase Auth.
-                </Typography>
+                {!user?.id && (
+                  <TextField
+                    fullWidth
+                    label="Contraseña inicial"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    helperText="Mínimo 8 caracteres. El usuario podrá cambiarla luego."
+                    required
+                  />
+                )}
               </Stack>
             </Stack>
             
@@ -168,16 +202,16 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
               <FormControl fullWidth>
                 <InputLabel>Rol</InputLabel>
                 <Select value={formData.role} label="Rol" onChange={(e) => setFormData({ ...formData, role: e.target.value as string })}>
-                  <MenuItem value="Administrador">Administrador</MenuItem>
-                  <MenuItem value="Usuario">Usuario</MenuItem>
+                  <MenuItem value={ROLES.admin}>{ROLES.admin}</MenuItem>
+                  <MenuItem value={ROLES.user}>{ROLES.user}</MenuItem>
                 </Select>
               </FormControl>
               
               <FormControl fullWidth>
                 <InputLabel>Estatus</InputLabel>
                 <Select value={formData.status} label="Estatus" onChange={(e) => setFormData({ ...formData, status: e.target.value as string })}>
-                  <MenuItem value="activo">Activo</MenuItem>
-                  <MenuItem value="inactivo">Inactivo</MenuItem>
+                  <MenuItem value={STATUS.active}>Activo</MenuItem>
+                  <MenuItem value={STATUS.inactive}>Inactivo</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
@@ -187,8 +221,8 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={onClose} color="inherit">Cancelar</Button>
-          <Button type="submit" variant="contained" color="success" disabled={uploading} sx={{ px: 4 }}>
-            {user?.id ? "Guardar Cambios" : "Crear Perfil"}
+          <Button type="submit" variant="contained" color="success" disabled={uploading || saving} sx={{ px: 4 }}>
+            {saving ? "Guardando..." : user?.id ? "Guardar Cambios" : "Crear Usuario"}
           </Button>
         </DialogActions>
       </Box>

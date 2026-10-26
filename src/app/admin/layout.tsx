@@ -2,8 +2,8 @@
 
 import { ReactNode, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { usePathname } from "next/navigation";
+import { isAdmin as fetchIsAdmin } from "@/lib/permissions";
 import {
   Box,
   Drawer,
@@ -219,31 +219,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [roleLoaded, setRoleLoaded] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    const loadRole = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      setIsAdmin(profile?.role === "Administrador");
-      setRoleLoaded(true);
-    };
-    loadRole();
+    fetchIsAdmin().then(setIsAdmin);
   }, []);
-
-  const restrictedRoute = pathname.startsWith("/admin/users");
-  const canViewRoute = !restrictedRoute || isAdmin;
-
-  useEffect(() => {
-    if (roleLoaded && !canViewRoute) router.replace("/admin/posts");
-  }, [roleLoaded, canViewRoute, router]);
 
   const toggleDrawer = useCallback(() => {
     if (isMobile) {
@@ -369,7 +348,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           }),
         }}
       >
-        {canViewRoute ? children : null}
+        {children}
       </Box>
     </Box>
   );

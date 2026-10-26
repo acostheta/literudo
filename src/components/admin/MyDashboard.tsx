@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentProfile } from "@/lib/permissions";
 import {
   Avatar,
   Box,
@@ -49,8 +50,8 @@ export default function MyDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [{ data: profileData }, { data: posts }, { data: galleries }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
+      const [profileData, { data: posts }, { data: galleries }] = await Promise.all([
+        getCurrentProfile(supabase),
         supabase.from("posts").select("id, title, status, created_at").eq("author_id", user.id),
         supabase.from("gallery_posts").select("id, title, status, created_at").eq("author_id", user.id),
       ]);
@@ -72,7 +73,7 @@ export default function MyDashboard() {
         href: `/admin/gallery/edit/${g.id}`,
       }));
 
-      setProfile(profileData as MyProfile | null);
+      setProfile(profileData);
       setItems([...articles, ...gallery].sort((a, b) => b.created_at.localeCompare(a.created_at)));
       setLoading(false);
     };

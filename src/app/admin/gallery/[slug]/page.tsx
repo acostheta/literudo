@@ -3,6 +3,8 @@
 import { useEffect, useState, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { POST_STATUS } from "@/lib/permissions";
+import { setGalleryPostStatus } from "../actions";
 import { GalleryPost } from "@/lib/types/gallery";
 import {
   Box,
@@ -15,6 +17,7 @@ import {
   Tooltip,
   Tabs,
   Tab,
+  Alert,
 } from "@mui/material";
 import {
   ArrowBack as BackIcon,
@@ -33,6 +36,7 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
   const [gallery, setGallery] = useState<GalleryPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const supabaseRef = useRef(createClient());
 
   useEffect(() => {
@@ -120,6 +124,12 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
       color: '#1a1a1a',
       pb: 15
     }}>
+      {error && (
+        <Alert severity="error" onClose={() => setError(null)} sx={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 200 }}>
+          {error}
+        </Alert>
+      )}
+
       <Box sx={{ position: 'fixed', top: 20, left: 20, zIndex: 100 }}>
         <Tooltip title="Volver a la lista">
           <IconButton
@@ -141,14 +151,10 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
           <Button
             variant="outlined"
             onClick={async () => {
-              const newStatus = gallery.status === "publicado" ? "borrador" : "publicado";
-              const { error } = await supabaseRef.current
-                .from("gallery_posts")
-                .update({ status: newStatus })
-                .eq("id", gallery.id);
-
-              if (error) alert("Error: " + error.message);
-              else setGallery({ ...gallery, status: newStatus as "borrador" | "publicado" });
+              const nuevo = gallery.status === POST_STATUS.published ? POST_STATUS.draft : POST_STATUS.published;
+              const result = await setGalleryPostStatus(gallery.id, nuevo);
+              if (!result.ok) setError(result.error);
+              else setGallery({ ...gallery, status: nuevo as "borrador" | "publicado" });
             }}
             sx={{
               bgcolor: 'white',

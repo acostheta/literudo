@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import {
+  Alert,
   Stack,
   Button,
 } from "@mui/material";
@@ -13,6 +13,8 @@ import {
   CheckCircle as ActivateIcon,
 } from "@mui/icons-material";
 import UserFormModal from "./UserFormModal";
+import { STATUS } from "@/lib/permissions";
+import { setUserStatus } from "@/app/admin/users/actions";
 
 interface UserProfile {
   id: string;
@@ -29,45 +31,46 @@ export default function UserDetailActions({ user }: { user: UserProfile }) {
   const router = useRouter();
   const [openEdit, setOpenEdit] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const toggleStatus = async () => {
     setLoading(true);
-    const newStatus = user.status === "activo" ? "inactivo" : "activo";
-    
-    const { error } = await supabase
-      .from("profiles")
-      .update({ status: newStatus })
-      .eq("id", user.id);
-
-    if (error) {
-      alert("Error al actualizar estatus: " + error.message);
-    } else {
-      router.refresh();
+    setError(null);
+    try {
+      const nuevo = user.status === STATUS.active ? STATUS.inactive : STATUS.active;
+      const result = await setUserStatus(user.id, nuevo);
+      if (!result.ok) setError(result.error);
+      else router.refresh();
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
-    <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-      <Button
-        variant="contained"
-        startIcon={<EditIcon />}
-        onClick={() => setOpenEdit(true)}
-      >
-        Editar
-      </Button>
-      
-      <Button
-        variant="outlined"
-        color={user.status === "activo" ? "warning" : "success"}
-        startIcon={user.status === "activo" ? <DeactivateIcon /> : <ActivateIcon />}
-        onClick={toggleStatus}
-        disabled={loading}
-      >
-        {user.status === "activo" ? "Desactivar" : "Activar"}
-      </Button>
+    <Stack spacing={2} sx={{ mt: 2, alignItems: { xs: "center", sm: "flex-start" } }}>
+      {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
 
-      <UserFormModal 
+      <Stack direction="row" spacing={2}>
+        <Button
+          variant="contained"
+          startIcon={<EditIcon />}
+          onClick={() => setOpenEdit(true)}
+        >
+          Editar
+        </Button>
+
+        <Button
+          variant="outlined"
+          color={user.status === STATUS.active ? "warning" : "success"}
+          startIcon={user.status === STATUS.active ? <DeactivateIcon /> : <ActivateIcon />}
+          onClick={toggleStatus}
+          disabled={loading}
+        >
+          {user.status === STATUS.active ? "Desactivar" : "Activar"}
+        </Button>
+      </Stack>
+
+      <UserFormModal
         open={openEdit}
         onClose={() => setOpenEdit(false)}
         user={user}

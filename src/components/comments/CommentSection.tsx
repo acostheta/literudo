@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { createClient, getCurrentUser } from "@/lib/supabase/client";
+import { isAdminRole } from "@/lib/permissions";
 import {
   Box,
   Typography,
@@ -55,7 +56,7 @@ export default function CommentSection({ postId, targetType = "post" }: CommentS
         .eq("id", user.id)
         .single();
 
-      if (profile?.role === "Administrador") {
+      if (profile?.role && isAdminRole(profile.role)) {
         setIsAdmin(true);
       }
     }

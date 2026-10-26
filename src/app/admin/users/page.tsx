@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
+import { isAdminRole, STATUS } from "@/lib/permissions";
+import { deleteUser } from "./actions";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -21,6 +23,7 @@ import {
   CircularProgress,
   Avatar,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -41,8 +44,10 @@ interface UserProfile {
 
 export default function UsersPage() {
   const router = useRouter();
+  const supabase = createClient();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [openModal, setOpenModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
 
@@ -52,13 +57,9 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) console.error("Error:", error);
-    else setUsers(data || []);
+    const { data, error } = await supabase.rpc("admin_list_profiles");
+    if (error) setError(error.message);
+    else setUsers((data as UserProfile[]) || []);
     setLoading(false);
   };
 
@@ -72,13 +73,12 @@ export default function UsersPage() {
     setOpenModal(true);
   };
 
-  const deleteUser = async (e: React.MouseEvent, id: string) => {
+  const deleteUserRow = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm("¿Estás seguro?")) {
-      const { error } = await supabase.from("profiles").delete().eq("id", id);
-      if (error) alert(error.message);
-      else setUsers(users.filter(u => u.id !== id));
-    }
+    if (!confirm("¿Estás seguro?")) return;
+    const result = await deleteUser(id);
+    if (!result.ok) setError(result.error);
+    else setUsers(users.filter(u => u.id !== id));
   };
 
   return (
@@ -98,6 +98,8 @@ export default function UsersPage() {
         user={selectedUser}
         onSuccess={fetchUsers}
       />
+
+      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 0 }} onClose={() => setError(null)}>{error}</Alert>}
 
       {/* Desktop Table */}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
@@ -127,17 +129,17 @@ export default function UsersPage() {
                       </Stack>
                     </TableCell>
                     <TableCell align="center" sx={{ py: 2, width: "20%" }}>
-                      <Chip label={user.role} size="small" color={user.role === "Administrador" ? "primary" : "default"} />
+                      <Chip label={user.role} size="small" color={isAdminRole(user.role) ? "primary" : "default"} />
                     </TableCell>
                     <TableCell align="center" sx={{ py: 2, width: "20%" }}>
-                      <Chip label={user.status} size="small" color={user.status === "activo" ? "success" : "warning"} variant="outlined" />
+                      <Chip label={user.status} size="small" color={user.status === STATUS.active ? "success" : "warning"} variant="outlined" />
                     </TableCell>
                     <TableCell align="right" sx={{ py: 2, width: "20%" }}>
                       <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
                         <IconButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); handleEditClick(user); }}>
                           <EditIcon fontSize="small" />
                         </IconButton>
-                        <IconButton size="small" color="error" onClick={(e) => deleteUser(e, user.id)}>
+                        <IconButton size="small" color="error" onClick={(e) => deleteUserRow(e, user.id)}>
                           <DeleteIcon fontSize="small" />
                         </IconButton>
                       </Stack>
@@ -186,14 +188,14 @@ export default function UsersPage() {
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Stack direction="row" spacing={0.5}>
-                    <Chip label={user.role} size="small" color={user.role === "Administrador" ? "primary" : "default"} />
-                    <Chip label={user.status} size="small" color={user.status === "activo" ? "success" : "warning"} variant="outlined" />
+                    <Chip label={user.role} size="small" color={isAdminRole(user.role) ? "primary" : "default"} />
+                    <Chip label={user.status} size="small" color={user.status === STATUS.active ? "success" : "warning"} variant="outlined" />
                   </Stack>
                   <Stack direction="row" spacing={0.5} onClick={(e) => e.stopPropagation()}>
                     <IconButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); handleEditClick(user); }}>
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton size="small" color="error" onClick={(e) => deleteUser(e, user.id)}>
+                    <IconButton size="small" color="error" onClick={(e) => deleteUserRow(e, user.id)}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Stack>

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryPost } from "@/lib/types/gallery";
+import { isAdmin, POST_STATUS } from "@/lib/permissions";
+import { setGalleryPostStatus } from "./actions";
 import {
   Box,
   Button,
@@ -21,6 +23,7 @@ import {
   Stack,
   CircularProgress,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -34,6 +37,7 @@ export default function GalleryListPage() {
   const router = useRouter();
   const [galleries, setGalleries] = useState<GalleryPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const supabaseRef = useRef(createClient());
 
   const fetchGalleries = async () => {
@@ -46,15 +50,11 @@ export default function GalleryListPage() {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+      const admin = await isAdmin(supabase);
 
       let query = supabase.from("gallery_posts").select("*");
 
-      if (profile?.role !== "Administrador") {
+      if (!admin) {
         query = query.eq("author_id", user.id);
       }
 
@@ -109,10 +109,18 @@ export default function GalleryListPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar esta galería?")) {
-      await supabaseRef.current.from("gallery_posts").delete().eq("id", id);
-      fetchGalleries();
-    }
+    if (!window.confirm("¿Estás seguro de que quieres eliminar esta galería?")) return;
+    const { error } = await supabaseRef.current.from("gallery_posts").delete().eq("id", id);
+    if (error) setError(error.message);
+    else fetchGalleries();
+  };
+
+  const toggleStatus = async (gallery: GalleryPost) => {
+    setError(null);
+    const nuevo = gallery.status === POST_STATUS.published ? POST_STATUS.draft : POST_STATUS.published;
+    const result = await setGalleryPostStatus(gallery.id, nuevo);
+    if (!result.ok) setError(result.error);
+    else fetchGalleries();
   };
 
   if (loading) {
@@ -154,6 +162,9 @@ export default function GalleryListPage() {
           Nueva Galería
         </Button>
       </Stack>
+
+      {/* Error */}
+      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 0 }} onClose={() => setError(null)}>{error}</Alert>}
 
       {/* Desktop Table */}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
@@ -201,16 +212,7 @@ export default function GalleryListPage() {
                           label={gallery.status === "publicado" ? "Publicado" : "Borrador"}
                           size="small"
                           color={gallery.status === "publicado" ? "success" : "default"}
-                          onClick={async () => {
-                            const newStatus = gallery.status === "publicado" ? "borrador" : "publicado";
-                            const { error } = await supabaseRef.current
-                              .from("gallery_posts")
-                              .update({ status: newStatus })
-                              .eq("id", gallery.id);
-
-                            if (error) alert("Error: " + error.message);
-                            else fetchGalleries();
-                          }}
+                          onClick={() => toggleStatus(gallery)}
                           sx={{
                             borderRadius: 0,
                             fontWeight: "bold",
@@ -274,15 +276,9 @@ export default function GalleryListPage() {
                     label={gallery.status === "publicado" ? "Publicado" : "Borrador"}
                     size="small"
                     color={gallery.status === "publicado" ? "success" : "default"}
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.stopPropagation();
-                      const newStatus = gallery.status === "publicado" ? "borrador" : "publicado";
-                      const { error } = await supabaseRef.current
-                        .from("gallery_posts")
-                        .update({ status: newStatus })
-                        .eq("id", gallery.id);
-                      if (error) alert("Error: " + error.message);
-                      else fetchGalleries();
+                      toggleStatus(gallery);
                     }}
                     sx={{ borderRadius: 0, fontWeight: "bold", cursor: 'pointer', flexShrink: 0, ml: 1 }}
                   />

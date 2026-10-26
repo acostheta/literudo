@@ -3,6 +3,8 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { POST_STATUS } from "@/lib/permissions";
+import { setPostStatus } from "../actions";
 import {
   Box,
   Container,
@@ -14,6 +16,7 @@ import {
   Paper,
   Button,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import {
   ArrowBack as BackIcon,
@@ -130,6 +133,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
   const router = useRouter();
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -171,6 +175,12 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
       color: '#1a1a1a',
       pb: 15
     }}>
+      {error && (
+        <Alert severity="error" onClose={() => setError(null)} sx={{ position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 200 }}>
+          {error}
+        </Alert>
+      )}
+
       {/* Barra de Navegación Discreta */}
       <Box sx={{ position: 'fixed', top: 20, left: 20, zIndex: 100 }}>
         <Tooltip title="Volver a la lista">
@@ -193,14 +203,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
           <Button 
             variant="outlined"
             onClick={async () => {
-              const newStatus = post.status === "publicado" ? "borrador" : "publicado";
-              const { error } = await supabase
-                .from("posts")
-                .update({ status: newStatus })
-                .eq("id", post.id);
-              
-              if (error) alert("Error: " + error.message);
-              else setPost({ ...post, status: newStatus });
+              const nuevo = post.status === POST_STATUS.published ? POST_STATUS.draft : POST_STATUS.published;
+              const result = await setPostStatus(post.id, nuevo);
+              if (!result.ok) setError(result.error);
+              else setPost({ ...post, status: nuevo });
             }}
             sx={{ 
               bgcolor: 'white', 

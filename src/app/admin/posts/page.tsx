@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { isAdmin, POST_STATUS } from "@/lib/permissions";
+import { setPostStatus } from "./actions";
 import {
   Box,
   Button,
@@ -20,6 +22,7 @@ import {
   Stack,
   CircularProgress,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -41,25 +44,22 @@ export default function PostsPage() {
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   const fetchPosts = async () => {
     setLoading(true);
-    
-    // 1. Obtener el usuario actual y su perfil
+
+    // 1. Obtener el usuario actual y si es Administrador
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    const admin = await isAdmin(supabase);
 
     // 2. Construir la consulta según el rol
     let query = supabase.from("posts").select("*, profiles(name)");
 
-    if (profile?.role !== "Administrador") {
+    if (!admin) {
       // Si es "Usuario", solo ve los suyos
       query = query.eq("author_id", user.id);
     }
@@ -75,11 +75,19 @@ export default function PostsPage() {
     fetchPosts();
   }, []);
 
+  const toggleStatus = async (post: Post) => {
+    setError(null);
+    const nuevo = post.status === POST_STATUS.published ? POST_STATUS.draft : POST_STATUS.published;
+    const result = await setPostStatus(post.id, nuevo);
+    if (!result.ok) setError(result.error);
+    else fetchPosts();
+  };
+
   const handleDelete = async (id: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar este artículo?")) {
-      await supabase.from("posts").delete().eq("id", id);
-      fetchPosts();
-    }
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este artículo?")) return;
+    const { error } = await supabase.from("posts").delete().eq("id", id);
+    if (error) setError(error.message);
+    else fetchPosts();
   };
 
   if (loading) {
@@ -122,6 +130,9 @@ export default function PostsPage() {
         </Button>
       </Stack>
 
+      {/* Error */}
+      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 0 }} onClose={() => setError(null)}>{error}</Alert>}
+
       {/* Desktop Table */}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0, border: "1px solid #eee" }}>
@@ -161,16 +172,7 @@ export default function PostsPage() {
                           label={post.status === "publicado" ? "Publicado" : "Borrador"}
                           size="small"
                           color={post.status === "publicado" ? "success" : "default"}
-                          onClick={async () => {
-                            const newStatus = post.status === "publicado" ? "borrador" : "publicado";
-                            const { error } = await supabase
-                              .from("posts")
-                              .update({ status: newStatus })
-                              .eq("id", post.id);
-
-                            if (error) alert("Error: " + error.message);
-                            else fetchPosts();
-                          }}
+                          onClick={() => toggleStatus(post)}
                           sx={{
                             borderRadius: 0,
                             fontWeight: "bold",
@@ -234,15 +236,9 @@ export default function PostsPage() {
                     label={post.status === "publicado" ? "Publicado" : "Borrador"}
                     size="small"
                     color={post.status === "publicado" ? "success" : "default"}
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.stopPropagation();
-                      const newStatus = post.status === "publicado" ? "borrador" : "publicado";
-                      const { error } = await supabase
-                        .from("posts")
-                        .update({ status: newStatus })
-                        .eq("id", post.id);
-                      if (error) alert("Error: " + error.message);
-                      else fetchPosts();
+                      toggleStatus(post);
                     }}
                     sx={{ borderRadius: 0, fontWeight: "bold", cursor: 'pointer', flexShrink: 0, ml: 1 }}
                   />

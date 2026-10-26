@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
+import { isAdminRole, STATUS } from "@/lib/permissions";
 import {
   Box,
   Container,
@@ -32,16 +33,15 @@ export default async function UserDetailPage({
   let errorMsg = null;
 
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", id)
-      .single();
-    
+    const supabase = await createClient();
+    // admin_list_profiles() es el único camino al correo: la columna está
+    // revocada para el cliente normal.
+    const { data, error } = await supabase.rpc("admin_list_profiles");
+
     if (error) {
       errorMsg = error.message;
     } else {
-      user = data;
+      user = (data as any[] | null)?.find((p) => p.id === id) ?? null;
     }
   } catch (e: any) {
     errorMsg = e.message;
@@ -87,13 +87,13 @@ export default async function UserDetailPage({
               <Chip 
                 label={user.role} 
                 size="small"
-                color={user.role === "Administrador" ? "primary" : "default"} 
+                color={isAdminRole(user.role) ? "primary" : "default"} 
                 icon={<RoleIcon fontSize="small" />}
               />
               <Chip 
                 label={user.status} 
                 size="small"
-                color={user.status === "activo" ? "success" : "warning"} 
+                color={user.status === STATUS.active ? "success" : "warning"} 
                 variant="outlined"
               />
             </Stack>

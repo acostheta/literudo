@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   Box,
   Drawer,
@@ -41,6 +43,11 @@ const navItems = [
 
 export default function NavDrawer({ open, onClose }: NavDrawerProps) {
   const pathname = usePathname();
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => setSignedIn(!!data.user));
+  }, []);
 
   return (
     <Drawer
@@ -181,35 +188,37 @@ export default function NavDrawer({ open, onClose }: NavDrawerProps) {
 
       {/* Acceso Rápido y Pie de Drawer */}
       <Box sx={{ p: 2, borderTop: "1px solid #d8c8b4", bgcolor: "#f5eee6" }}>
-        <ListItemButton
-          component={Link}
-          href="/login"
-          onClick={onClose}
-          sx={{
-            borderRadius: "4px",
-            border: "1px solid #d8c8b4",
-            bgcolor: "#fcf8f2",
-            mb: 2,
-            "&:hover": { bgcolor: "#f5eee6" },
-          }}
-        >
-          <ListItemIcon sx={{ minWidth: 36, color: "#6b1d22" }}>
-            <Login sx={{ fontSize: 19 }} />
-          </ListItemIcon>
-          <ListItemText
-            primary="Iniciar Sesión"
-            slotProps={{
-              primary: {
-                sx: {
-                  fontSize: "0.88rem",
-                  fontWeight: 600,
-                  fontFamily: "var(--font-sans)",
-                  color: "#241812",
-                },
-              },
+        {!signedIn && (
+          <ListItemButton
+            component={Link}
+            href="/login"
+            onClick={onClose}
+            sx={{
+              borderRadius: "4px",
+              border: "1px solid #d8c8b4",
+              bgcolor: "#fcf8f2",
+              mb: 2,
+              "&:hover": { bgcolor: "#f5eee6" },
             }}
-          />
-        </ListItemButton>
+          >
+            <ListItemIcon sx={{ minWidth: 36, color: "#6b1d22" }}>
+              <Login sx={{ fontSize: 19 }} />
+            </ListItemIcon>
+            <ListItemText
+              primary="Iniciar Sesión"
+              slotProps={{
+                primary: {
+                  sx: {
+                    fontSize: "0.88rem",
+                    fontWeight: 600,
+                    fontFamily: "var(--font-sans)",
+                    color: "#241812",
+                  },
+                },
+              }}
+            />
+          </ListItemButton>
+        )}
 
         <Typography
           variant="caption"
