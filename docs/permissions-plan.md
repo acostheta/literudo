@@ -96,6 +96,7 @@ Fecha: 2026-10-26 · Rama: `permissions`.
 
 - `npx tsc --noEmit` pasa; `npm run lint` solo deja los warnings del baseline.
 - Sintaxis de `can_read_target()`, `mi_perfil()`, `admin_list_profiles()` y de las políticas nuevas validada contra la DB remota dentro de `begin; … rollback;` (sin cambios persistentes). También se validó el mecanismo de los tests: `create extension pgtap`, alta mínima en `auth.users`, trigger `handle_new_user`, `set_config('request.jwt.claims')` y RLS con `role = authenticated`.
+- **Aplicado al remoto** (por MCP, con las versiones registradas en `supabase_migrations.schema_migrations`): `20261026120000_profiles_role_status_check` y `20261026121000_profiles_audit`. Verificado en una transacción con `ROLLBACK`: un `role`/`status` inválido da `check_violation` y un cambio de estatus deja su fila en `profiles_audit`.
 - **No ejecutado**: `supabase db reset` y `supabase test db` (Docker bloqueado) ni `supabase db push` (falta la contraseña de la DB). El primer PR es la primera corrida real del job `rls`.
 
 ### Pendiente
@@ -103,8 +104,8 @@ Fecha: 2026-10-26 · Rama: `permissions`.
 - Orden de despliegue: el código nuevo tolera el esquema viejo (fallbacks sin correo), así que se puede desplegar primero y aplicar la migración de RLS después. Al revés, el código desplegado hoy hace `select *` sobre `profiles` y falla cuando el correo queda revocado.
 
 - **Docker no arranca en esta máquina**: WSL2 responde «la virtualización no está habilitada». Hace falta activar «Plataforma de máquina virtual» + VT-x/AMD-V en BIOS y reiniciar. Hasta entonces `supabase db reset` y `supabase test db` no se pueden ejecutar en local (el job de CI sí los corre).
-- Aplicar las migraciones al proyecto remoto (`supabase db push`) requiere la contraseña de la base o hacerlo desde el dashboard; no hay `SUPABASE_DB_PASSWORD` en `.env.local`.
-- `supabase migration repair --status applied 20260831173130 20260502000000` (y renombrar las versiones ya reconciliadas) antes del primer `db push`.
+- Aplicar la migración de RLS (`20261026122000`) al remoto **después** de desplegar el código nuevo; antes hay que aplicar la línea base solo en local o marcarla como aplicada (`repair`) para que `db push` no re-ejecute DDL.
+- `supabase migration repair --status applied 20260831173130 20260502000000` antes del primer `db push`.
 - Migraciones solo-remotas que quedan así a propósito: las 6 de mayo (reconstruidas en la línea base) y `fix_keepalive_ping_target` / `lock_keepalive_ping_from_anon`.
 
 ## Orden de prioridad
