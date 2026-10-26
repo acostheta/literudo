@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:reset": "supabase db reset",
+    "db:test": "supabase test db"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -46,6 +48,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "^15.1.0",
+    "supabase": "^2.101.0",
     "typescript": "^5"
   }
 }
