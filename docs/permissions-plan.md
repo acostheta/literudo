@@ -58,6 +58,53 @@ Eres un ingeniero senior de Supabase y Next.js. Mejora los permisos de `D:/prj/l
 24. Trigger de auditoría para `role` y `status` de `profiles`.
 25. Actualizar `AGENTS.md` y `MEMORY.md`.
 
+## Estado (ejecución)
+
+Fecha: 2026-10-26 · Rama: `permissions`.
+
+### Línea base (inspección de la DB viva)
+
+- Tablas en `public`: `profiles`, `posts`, `gallery_posts`, `gallery_images`, `gallery_embeds`, `comments`, `reactions`. Todas con RLS activado (sin `FORCE`).
+- `profiles.role` y `profiles.status` **no tenían CHECK**; `status` era nullable con default `'activo'`.
+- `is_admin()` (SECURITY DEFINER) existía y solo `profiles` la usaba.
+- `protect_profile_privileged_fields` (trigger BEFORE UPDATE) ya bloqueaba `role`, `status`, `email` e `id` para no-administradores.
+- Sin auditoría de cambios de rol/estatus.
+- Migraciones del repo desalineadas con `supabase_migrations.schema_migrations`: 7 archivos con versión distinta a la registrada y `add_gallery_tables` nunca registrada. `supabase db push` habría re-ejecutado DDL.
+- `schema.sql` obsoleto (`authors`, `content TEXT`). `.env.local` ya estaba ignorado.
+
+### Hallazgos RLS corregidos en las migraciones nuevas
+
+1. `posts`: política `FOR ALL` sin `WITH CHECK` (un autor podía reasignar `author_id`) + dos SELECT duplicadas.
+2. `comments`: `SELECT true` (comentarios de borradores visibles para anónimos) y `UPDATE` sin `WITH CHECK` (falsificar `user_id`).
+3. `gallery_images`/`gallery_embeds`: `FOR ALL` y subconsultas directas a `profiles`; faltaba `UPDATE` del autor en embeds.
+4. `profiles`: `SELECT true` exponía el **correo de todos** a anónimos. Ahora la columna está revocada y el correo solo se lee por `mi_perfil()` (propio) o `admin_list_profiles()` (Administrador).
+5. `storage.objects`: 9 políticas con rol `public` y sin `WITH CHECK`; cualquiera con la publishable key podía subir.
+
+### Cambios en el repo
+
+- `supabase/migrations/20260502000000_base_profiles_posts.sql`: línea base reconstruida (tablas, trigger `handle_new_user`, `rls_auto_enable`, buckets y políticas de Storage).
+- `supabase/migrations/20261026120000_profiles_role_status_check.sql`: CHECK de `role`/`status`, `status` NOT NULL.
+- `supabase/migrations/20261026121000_profiles_audit.sql`: tabla `profiles_audit` + trigger (solo lectura para Administrador).
+- `supabase/migrations/20261026122000_rls_por_operacion.sql`: una política por operación, `is_admin()` en todas las de administrador, `can_read_target()` para comentarios, storage y RPCs de correo.
+- `supabase/tests/rls.test.sql`: 26 asserts pgTAP con `set_config('request.jwt.claims')`, `reset role` y conteos de filas. Termina en `ROLLBACK`.
+- `src/lib/permissions.ts`: `ROLES`, `STATUS`, `POST_STATUS`, `Profile`, `isAdminRole`, `getCurrentProfile`, `isAdmin`, `canManageContent`.
+- Server Actions: `app/admin/{users,posts,gallery}/actions.ts` (rol, estatus, alta/baja, publicar). Errores tipados y `try/finally` en la UI.
+- `app/admin/users/layout.tsx`: 403 en servidor (la autorización real sigue en RLS).
+- `.github/workflows/ci.yml`: `tsc` + `lint` + `supabase start` + `supabase test db`.
+
+### Verificación
+
+- `npx tsc --noEmit` pasa; `npm run lint` solo deja los warnings del baseline.
+- Sintaxis de `can_read_target()`, `mi_perfil()`, `admin_list_profiles()` y de las políticas nuevas validada contra la DB remota dentro de `begin; … rollback;` (sin cambios persistentes). También se validó el mecanismo de los tests: `create extension pgtap`, alta mínima en `auth.users`, trigger `handle_new_user`, `set_config('request.jwt.claims')` y RLS con `role = authenticated`.
+- **No ejecutado**: `supabase db reset` y `supabase test db` (Docker bloqueado) ni `supabase db push` (falta la contraseña de la DB). El primer PR es la primera corrida real del job `rls`.
+
+### Pendiente
+
+- **Docker no arranca en esta máquina**: WSL2 responde «la virtualización no está habilitada». Hace falta activar «Plataforma de máquina virtual» + VT-x/AMD-V en BIOS y reiniciar. Hasta entonces `supabase db reset` y `supabase test db` no se pueden ejecutar en local (el job de CI sí los corre).
+- Aplicar las migraciones al proyecto remoto (`supabase db push`) requiere la contraseña de la base o hacerlo desde el dashboard; no hay `SUPABASE_DB_PASSWORD` en `.env.local`.
+- `supabase migration repair --status applied 20260831173130 20260502000000` (y renombrar las versiones ya reconciliadas) antes del primer `db push`.
+- Migraciones solo-remotas que quedan así a propósito: las 6 de mayo (reconstruidas en la línea base) y `fix_keepalive_ping_target` / `lock_keepalive_ping_from_anon`.
+
 ## Orden de prioridad
 
 RLS modelada y testeada → migraciones completas en el repo → función central de permisos → Server Actions para lo sensible → UI que refleja lo anterior.

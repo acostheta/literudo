@@ -8,32 +8,36 @@ This version (Next 15.5, App Router) has breaking changes — APIs, conventions,
 
 - `npx tsc --noEmit` → must pass (no npm script exists for it)
 - `npm run lint` (`next lint`, deprecated) → exits 0 with warnings today; warnings are the baseline
-- No test suite exists — don't invent one
-- No CI runs lint/build; the only workflow is `.github/workflows/supabase-keepalive.yml` (keepalive — don't break or "simplify" it)
+- `npm run db:test` → pgTAP de RLS (`supabase test db`). Necesita el stack local (`npm run db:reset` antes, y Docker arrancado)
+- CI: `.github/workflows/ci.yml` corre tsc + lint + `supabase start` + `supabase test db`. El otro workflow es `.github/workflows/supabase-keepalive.yml` (keepalive — don't break or "simplify" it)
 
 ## Run
 
-- `npm run dev` — Turbopack; needs `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (used for password-recovery links)
+- `npm run dev` — Turbopack; needs `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL` (used for password-recovery links). `SUPABASE_SERVICE_ROLE_KEY` is only for the user server actions (Vercel también la necesita)
 - `npm run build` — what Vercel deploys (README)
+- `npm run db:reset` / `npm run db:test` — stack local de Supabase (Docker Desktop + WSL2 con virtualización habilitada)
 
 ## Backend: Supabase only
 
 - Auth/DB/Storage via `@supabase/ssr`; the three clients live in `src/lib/supabase/{client,server,middleware}.ts`
 - Firebase leftovers exist (`firebase` dep, `firebase.json`, `firestore.rules`, `src/lib/firebase.ts`) but nothing imports them — don't add Firebase code
-- `supabase/migrations/*.sql` covers only later features (gallery, comments, keepalive, lockdown) and is applied to the linked remote project (`supabase/.temp/linked-project.json`). No local stack (no `supabase/config.toml`); DDL also via the Supabase MCP from `opencode.json`
-- The base tables (`profiles`, `posts`, `handle_new_user` trigger) were created outside the repo and exist only in the live DB — inspect before assuming. (`avatars` is a Storage bucket, not a table)
-- Root `schema.sql` is stale: defines `authors` (unused by the app) and lacks `profiles`, `gallery_*`. Trust the live DB / migrations, not that file
+- `supabase/migrations/*.sql` es la fuente del esquema, incluida la línea base (`20260502000000_base_profiles_posts.sql`): `supabase db reset` reconstruye la DB desde cero. Las versiones están alineadas con `supabase_migrations.schema_migrations` del remoto; antes de un `db push` nuevo, `supabase migration list --linked`
+- DDL puntual también puede ir por el Supabase MCP, pero una feature va en migración versionada (una aplicada no se edita)
+- Reglas RLS: una política por operación, nunca `FOR ALL`, y las de administrador usan `public.is_admin()`. El correo de `profiles` está revocado para `anon`/`authenticated`: se lee por `mi_perfil()` (propio) o `admin_list_profiles()` (solo Administrador)
+- `posts`/`gallery_posts` usan `author_id = auth.uid()` en alta y en `WITH CHECK`; el `author_id` no se puede reasignar
 - Keepalive is intentional two-layer defense (pg_cron heartbeat migration + weekly GH Actions restore) against Supabase Free auto-pause
 
 ## Auth gotchas
 
 - `src/middleware.ts` matcher hits every path but only runs logic for `/admin`: session refresh, redirect to `/login` when signed out, and sign-out of users missing the `literudo_remember` cookie. Preserve both behaviors
-- Role checks are client-side and partial — individual pages compare `profiles.role === "Administrador"` (Spanish string); RLS policies in `supabase/migrations` are the real enforcement, so new admin data needs RLS, not just a UI gate
-- Comments read via RPC `get_comments_with_profile` from `src/components/comments/CommentSection.tsx` (count is done client-side); the lockdown migration deliberately leaves the comment RPCs callable
+- Capacidades en código con `src/lib/permissions.ts`: `getCurrentProfile`, `isAdmin`, `isAdminRole` (solo etiquetas), `canManageContent`, `ROLES`, `STATUS`, `POST_STATUS`. No comparar contra `"Administrador"` suelto
+- La UI no es la seguridad: RLS es la autorización real; `/admin/users` además muestra un 403 en servidor (`app/admin/users/layout.tsx`)
+- Escrituras sensibles por Server Actions: `app/admin/{users,posts,gallery}/actions.ts` (rol, estatus, alta/baja con la Admin API, publicar). Devuelven `{ ok, error }` y la UI usa `Alert`, no `alert()`
+- Comments read via RPC `get_comments_with_profile` from `src/components/comments/CommentSection.tsx` (count is done client-side); la lectura exige que el post/galería sea visible (`can_read_target`)
 
 ## Conventions
 
 - Spanish everywhere: UI strings, code comments, commit messages (`feat: ...`)
 - MUI v9 + Emotion is app-wide: theme in `src/theme.ts`, wrapped by `src/components/Providers.tsx` in the root layout; heavier in the `/admin` backoffice. `next.config.ts` sets `experimental.optimizePackageImports` for MUI to keep dev compiles fast — keep it
 - ESLint is flat config (`eslint.config.mjs`): `no-explicit-any` off, unused vars warn
-- Branches: `main`, `master`, `nueva-ui` (currently checked out)
+- Branches: `main`, `master` (local `permissions` holds this plan)
