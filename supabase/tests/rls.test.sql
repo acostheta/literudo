@@ -259,10 +259,10 @@ select is((select email from public.mi_perfil()), 'autor1@test.local'::text,
 
 select pg_temp.como(null);
 
-select throws_ok(
-  $$ select * from public.admin_list_profiles() $$,
-  '42501', null,
-  'un anonimo no puede listar los perfiles con correo');
+select is(
+  has_function_privilege('anon', 'public.admin_list_profiles()', 'EXECUTE'),
+  false,
+  'un anonimo no puede ejecutar el listado de perfiles con correo');
 
 select * from finish();
 

@@ -98,6 +98,7 @@ Fecha: 2026-10-26 · Rama: `permissions`.
 - Sintaxis de `can_read_target()`, `mi_perfil()`, `admin_list_profiles()` y de las políticas nuevas validada contra la DB remota dentro de `begin; … rollback;` (sin cambios persistentes). También se validó el mecanismo de los tests: `create extension pgtap`, alta mínima en `auth.users`, trigger `handle_new_user`, `set_config('request.jwt.claims')` y RLS con `role = authenticated`.
 - **Aplicado al remoto** (por MCP, con las versiones registradas en `supabase_migrations.schema_migrations`): `20261026120000_profiles_role_status_check` y `20261026121000_profiles_audit`. Verificado en una transacción con `ROLLBACK`: un `role`/`status` inválido da `check_violation` y un cambio de estatus deja su fila en `profiles_audit`.
 - `supabase db reset` reconstruye el esquema completo (16 migraciones) y `supabase test db` pasa **26/26** en el stack local.
+- Aviso de imagen: `supabase/postgres:17.6.1.106` (la que baja CI con `db start`) hace **segfault** cuando un rol sin `EXECUTE` llama a una función; reproducido con `mi_perfil()`, `admin_list_profiles()` y `keepalive_ping()`. Producción corre `17.6.1.084` y no lo hace. Por eso el caso anónimo se afirma con `has_function_privilege()` en vez de provocar el error.
 - **No ejecutado**: `supabase db push` (falta la contraseña de la DB); el primer PR será la primera corrida del job `rls` en CI.
 
 ### Pendiente
