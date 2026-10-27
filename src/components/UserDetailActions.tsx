@@ -21,8 +21,8 @@ interface UserProfile {
   name: string;
   email: string;
   role: string;
-  avatar_url?: string;
-  about_me?: string;
+  avatar_url?: string | null;
+  about_me?: string | null;
   status: string;
   created_at: string;
 }

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { isAdminRole, STATUS } from "@/lib/permissions";
+import { isAdminRole, STATUS, adminListProfiles } from "@/lib/permissions";
 import {
   Box,
   Container,
@@ -34,24 +34,10 @@ export default async function UserDetailPage({
 
   try {
     const supabase = await createClient();
-    // admin_list_profiles() es el único camino al correo: la columna está
-    // revocada para el cliente normal.
-    const { data, error } = await supabase.rpc("admin_list_profiles");
-
-    if (!error) {
-      user = (data as any[] | null)?.find((p) => p.id === id) ?? null;
-    } else {
-      // shortcut: sin la migración de RLS aplicada no existe el RPC; la ficha
-      // funciona sin correo. Quitar cuando todos los entornos estén migrados.
-      const { data: fallback, error: fallbackError } = await supabase
-        .from("profiles")
-        .select("id, name, role, status, avatar_url, about_me, created_at")
-        .eq("id", id)
-        .maybeSingle();
-
-      if (fallbackError) errorMsg = fallbackError.message;
-      else user = fallback ? { ...fallback, email: "" } : null;
-    }
+    // Pasa por el RPC (correo solo para Administrador) con fallback mientras
+    // la migración de RLS no esté aplicada.
+    const profiles = await adminListProfiles(supabase);
+    user = profiles.find((p) => p.id === id) ?? null;
   } catch (e: any) {
     errorMsg = e.message;
   }
@@ -83,7 +69,7 @@ export default async function UserDetailPage({
       <Paper sx={{ p: { xs: 3, md: 5 }, borderRadius: 4 }}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={4} sx={{ mb: 5, alignItems: 'center' }}>
           <Avatar
-            src={user.avatar_url}
+            src={user.avatar_url || undefined}
             sx={{ width: 150, height: 150, border: '4px solid #f0f0f0' }}
           >
             {user.name.charAt(0)}

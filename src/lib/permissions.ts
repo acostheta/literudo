@@ -49,6 +49,32 @@ export async function isAdmin(
   return isAdminRole((await getCurrentProfile(supabase))?.role);
 }
 
+// Listado de usuarios con correo para el panel.
+export async function adminListProfiles(
+  supabase: SupabaseClient = createClient(),
+): Promise<Profile[]> {
+  const { data, error } = await supabase.rpc("admin_list_profiles");
+  if (!error) return (data as Profile[]) ?? [];
+
+  // shortcut: sin la migración de RLS aplicada no existe el RPC; mientras
+  // tanto el correo sigue siendo legible por columna. Quitar al migrar todo.
+  const conCorreo = await supabase
+    .from("profiles")
+    .select("id, name, email, role, status, avatar_url, about_me, created_at")
+    .order("created_at", { ascending: false });
+  if (!conCorreo.error) return (conCorreo.data as Profile[]) ?? [];
+
+  const sinCorreo = await supabase
+    .from("profiles")
+    .select("id, name, role, status, avatar_url, about_me, created_at")
+    .order("created_at", { ascending: false });
+
+  return ((sinCorreo.data ?? []) as Omit<Profile, "email">[]).map((p) => ({
+    ...p,
+    email: "",
+  }));
+}
+
 export async function canManageContent(
   supabase: SupabaseClient,
   authorId: string,

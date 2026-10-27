@@ -31,8 +31,8 @@ interface UserProfile {
   name: string;
   email: string;
   role: string;
-  avatar_url?: string;
-  about_me?: string;
+  avatar_url?: string | null;
+  about_me?: string | null;
   status: string;
 }
 
@@ -161,7 +161,7 @@ export default function UserFormModal({ open, onClose, user, onSuccess }: UserFo
           <Stack spacing={4} sx={{ py: 1 }}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ alignItems: "center" }}>
               <Box sx={{ textAlign: 'center' }}>
-                <Avatar src={formData.avatar_url} sx={{ width: 120, height: 120, mb: 2, mx: 'auto', border: '2px solid #eee' }}>
+                <Avatar src={formData.avatar_url || undefined} sx={{ width: 120, height: 120, mb: 2, mx: 'auto', border: '2px solid #eee' }}>
                   <PersonIcon sx={{ fontSize: 70 }} />
                 </Avatar>
                 <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleFileUpload} disabled={uploading} />

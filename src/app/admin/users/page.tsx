@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { isAdminRole, STATUS } from "@/lib/permissions";
+import { isAdminRole, STATUS, adminListProfiles } from "@/lib/permissions";
 import { deleteUser } from "./actions";
 import { useRouter } from "next/navigation";
 import {
@@ -37,8 +37,8 @@ interface UserProfile {
   name: string;
   email: string;
   role: string;
-  avatar_url?: string;
-  about_me?: string;
+  avatar_url?: string | null;
+  about_me?: string | null;
   status: string;
 }
 
@@ -57,22 +57,8 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("admin_list_profiles");
-
-    if (!error) {
-      setUsers((data as UserProfile[]) || []);
-    } else {
-      // shortcut: si la migración de RLS aún no está aplicada no existe el RPC;
-      // el listado funciona sin correo. Quitar cuando todos los entornos estén.
-      const { data: fallback, error: fallbackError } = await supabase
-        .from("profiles")
-        .select("id, name, role, status, avatar_url, about_me, created_at")
-        .order("created_at", { ascending: false });
-
-      if (fallbackError) setError(fallbackError.message);
-      else setUsers(((fallback || []) as Omit<UserProfile, "email">[]).map((u) => ({ ...u, email: "" })));
-    }
-
+    const data = await adminListProfiles(supabase);
+    setUsers(data);
     setLoading(false);
   };
 
@@ -134,7 +120,7 @@ export default function UsersPage() {
                   <TableRow key={user.id} hover onClick={() => router.push(`/admin/users/${user.id}`)} sx={{ cursor: 'pointer' }}>
                     <TableCell sx={{ py: 2, width: "40%", overflow: 'hidden' }}>
                       <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-                        <Avatar src={user.avatar_url} sx={{ border: '1px solid #eee', flexShrink: 0 }}>{user.name.charAt(0)}</Avatar>
+                        <Avatar src={user.avatar_url || undefined} sx={{ border: '1px solid #eee', flexShrink: 0 }}>{user.name.charAt(0)}</Avatar>
                         <Box sx={{ overflow: 'hidden' }}>
                           <Typography variant="body2" noWrap sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>{user.name}</Typography>
                           <Typography variant="caption" color="text.secondary" noWrap sx={{ lineHeight: 1, display: 'block' }}>{user.email}</Typography>
@@ -191,7 +177,7 @@ export default function UsersPage() {
                 onClick={() => router.push(`/admin/users/${user.id}`)}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-                  <Avatar src={user.avatar_url} sx={{ width: 40, height: 40, border: '1px solid #eee', flexShrink: 0 }}>
+                  <Avatar src={user.avatar_url || undefined} sx={{ width: 40, height: 40, border: '1px solid #eee', flexShrink: 0 }}>
                     {user.name.charAt(0)}
                   </Avatar>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
