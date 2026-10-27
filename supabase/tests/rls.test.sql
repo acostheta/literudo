@@ -174,13 +174,12 @@ select throws_ok(
 
 select pg_temp.como('00000000-0000-4000-8000-000000000002');
 
-select is((
-  with actualizado as (
-    update public.gallery_embeds set caption = 'nuevo'
-    where id = '40000000-0000-4000-8000-000000000001'
-    returning 1
-  ) select count(*) from actualizado
-), 1::bigint,
+update public.gallery_embeds set caption = 'nuevo'
+where id = '40000000-0000-4000-8000-000000000001';
+
+select is((select count(*) from public.gallery_embeds
+           where id = '40000000-0000-4000-8000-000000000001'
+             and caption = 'nuevo'), 1::bigint,
   'el autor actualiza el embed de su propia galeria');
 
 select pg_temp.como('00000000-0000-4000-8000-000000000003');
@@ -233,13 +232,14 @@ select is((select count(*) from public.posts
            where id = '10000000-0000-4000-8000-000000000003'), 1::bigint,
   'el Administrador ve el borrador ajeno');
 
-select is((
-  with cambiado as (
-    update public.profiles set status = 'inactivo'
-    where id = '00000000-0000-4000-8000-000000000003'
-    returning 1
-  ) select count(*) from cambiado
-), 1::bigint,
+update public.profiles set status = 'inactivo'
+where id = '00000000-0000-4000-8000-000000000003';
+
+select pg_temp.como('00000000-0000-4000-8000-000000000001');
+
+select is((select count(*) from public.profiles
+           where id = '00000000-0000-4000-8000-000000000003'
+             and status = 'inactivo'), 1::bigint,
   'el Administrador cambia el estatus de otro usuario');
 
 select is((select count(*) from public.profiles_audit

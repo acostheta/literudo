@@ -30,7 +30,8 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 2.101.0
-      # Levanta el stack local, aplica todas las migraciones desde cero y corre
-      # pgTAP. Si una migración no reconstruye el esquema, este job falla.
+      # Levanta el stack local, reconstruye el esquema desde cero y corre pgTAP.
+      # Si una migración no reconstruye la DB, este job falla.
       - run: supabase start
+      - run: supabase db reset
       - run: supabase test db

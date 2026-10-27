@@ -108,17 +108,8 @@ enabled = true
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
-# Buckets de producción; el stack local debe parecerse al remoto.
-[storage.buckets.avatars]
-public = true
-
-[storage.buckets.posts]
-public = true
-
-[storage.buckets.gallery]
-public = true
-file_size_limit = "10MiB"
-allowed_mime_types = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+# Los buckets viven en la migración base (20260502000000), no aquí: una sola
+# fuente para el remoto y el local.
 
 # Allow connections via S3 compatible clients
 [storage.s3_protocol]
