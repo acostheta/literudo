@@ -8,8 +8,8 @@ This version (Next 15.5, App Router) has breaking changes — APIs, conventions,
 
 - `npx tsc --noEmit` → must pass (no npm script exists for it)
 - `npm run lint` (`next lint`, deprecated) → exits 0 with warnings today; warnings are the baseline
-- `npm run db:test` → pgTAP de RLS (`supabase test db`). Necesita el stack local (`npm run db:reset` antes, y Docker arrancado)
-- CI: `.github/workflows/ci.yml` corre tsc + lint + `supabase start` + `supabase test db`. El otro workflow es `.github/workflows/supabase-keepalive.yml` (keepalive — don't break or "simplify" it)
+- `npm run db:test` → pgTAP de RLS (`supabase test db`). Necesita el stack local (`npm run db:reset` antes, y Docker arrancado). Si el test muere con «server closed the connection», es la imagen `supabase/postgres:17.6.1.106`: hace segfault cuando un rol sin `EXECUTE` llama a una función. No llames funciones revocadas como `anon` en un test; usa `has_function_privilege`
+- CI: `.github/workflows/ci.yml` corre tsc + lint + `supabase db start` + `supabase test db`. El otro workflow es `.github/workflows/supabase-keepalive.yml` (keepalive — don't break or "simplify" it)
 
 ## Run
 
