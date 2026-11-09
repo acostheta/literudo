@@ -13,7 +13,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(26);
+select plan(28);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures (como postgres, sin RLS)
@@ -88,6 +88,15 @@ select throws_ok(
 
 select cmp_ok((select count(*) from public.profiles), '>', 0::bigint,
   'anonimo si puede leer el nombre publico');
+
+select is(
+  has_function_privilege('anon', 'public.get_home_feed()', 'EXECUTE'),
+  true,
+  'un anonimo puede cargar la portada'
+);
+
+select is((select count(*) from public.get_home_feed()), 1::bigint,
+  'la portada anonima solo trae lo publicado');
 
 -- ---------------------------------------------------------------------------
 -- Usuario: gestiona lo suyo, nada ajeno

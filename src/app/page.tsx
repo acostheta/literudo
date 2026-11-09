@@ -1,7 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { createClient, getCurrentUser } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FeedCard from "@/components/FeedCard";
@@ -10,195 +7,51 @@ import {
   Container,
   Typography,
   Stack,
-  CircularProgress,
 } from "@mui/material";
 import { AutoStories } from "@mui/icons-material";
 
-interface Post {
+interface FeedItem {
   id: string;
+  type: "post" | "gallery";
   title: string;
   slug: string;
-  excerpt: string;
-  created_at: string;
-  type: "post";
-  comment_count: number;
-  like_count: number;
-  liked: boolean;
-}
-
-interface GalleryEntry {
-  id: string;
-  title: string;
-  slug: string;
+  excerpt: string | null;
   description: string | null;
   created_at: string;
+  author: { name: string | null; avatar_url: string | null } | null;
   cover_url: string | null;
   image_count: number;
   embed_count: number;
-  type: "gallery";
   comment_count: number;
   like_count: number;
   liked: boolean;
 }
 
-type FeedItem = Post | GalleryEntry;
+export default async function Home() {
+  // Se consulta en el servidor: el usuario recibe el HTML con el feed ya
+  // pintado, sin esperar el viaje navegador->Supabase (~400 ms).
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("get_home_feed");
+  if (error) console.error("get_home_feed:", error);
 
-// Los conteos de la portada vienen en dos llamadas (una por tipo), no una por entrada
-async function fetchEngagement(
-  supabase: ReturnType<typeof createClient>,
-  posts: FeedItem[],
-  galleries: FeedItem[]
-) {
-  const countMap = new Map<string, { comments: number; likes: number }>();
-  const likedSet = new Set<string>();
-
-  const postIds = posts.map((p) => p.id);
-  const galleryIds = galleries.map((g) => g.id);
-
-  const jobs: PromiseLike<any>[] = [];
-
-  if (postIds.length) {
-    jobs.push(
-      supabase
-        .rpc("get_counts", { p_target_ids: postIds, p_target_type: "post" })
-        .then(({ data }) =>
-          (data || []).forEach((r: any) =>
-            countMap.set(`post|${r.item_id}`, {
-              comments: r.comments_n,
-              likes: r.likes_n,
-            })
-          )
-        )
-    );
-  }
-
-  if (galleryIds.length) {
-    jobs.push(
-      supabase
-        .rpc("get_counts", { p_target_ids: galleryIds, p_target_type: "gallery" })
-        .then(({ data }) =>
-          (data || []).forEach((r: any) =>
-            countMap.set(`gallery|${r.item_id}`, {
-              comments: r.comments_n,
-              likes: r.likes_n,
-            })
-          )
-        )
-    );
-  }
-
-  const allIds = [...postIds, ...galleryIds];
-  const user = await getCurrentUser();
-  if (user && allIds.length) {
-    jobs.push(
-      supabase
-        .from("reactions")
-        .select("target_id, target_type")
-        .eq("user_id", user.id)
-        .in("target_id", allIds)
-        .then(({ data }) =>
-          (data || []).forEach((r: any) => likedSet.add(`${r.target_type}|${r.target_id}`))
-        )
-    );
-  }
-
-  await Promise.all(jobs);
-  return { countMap, likedSet };
-}
-
-export default function Home() {
-  const [items, setItems] = useState<FeedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClient();
-
-  useEffect(() => {
-    const fetchFeed = async () => {
-      const [{ data: posts }, { data: galleries }] = await Promise.all([
-        supabase
-          .from("posts")
-          .select("id, title, slug, excerpt, created_at")
-          .eq("status", "publicado")
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("gallery_posts")
-          .select("id, title, slug, description, created_at")
-          .eq("status", "publicado")
-          .order("created_at", { ascending: false }),
-      ]);
-
-      const postItems: FeedItem[] = (posts || []).map((p) => ({
-        ...p,
-        type: "post" as const,
-        comment_count: 0,
-        like_count: 0,
-        liked: false,
-      }));
-
-      let galleryItems: FeedItem[] = [];
-      if (galleries && galleries.length > 0) {
-        const postIds = galleries.map((g) => g.id);
-        const [{ data: images }, { data: embeds }] = await Promise.all([
-          supabase
-            .from("gallery_images")
-            .select("gallery_post_id, image_url, caption, description, sort_order")
-            .in("gallery_post_id", postIds)
-            .order("sort_order"),
-          supabase
-            .from("gallery_embeds")
-            .select("gallery_post_id")
-            .in("gallery_post_id", postIds),
-        ]);
-
-        const coverMap: Record<string, string> = {};
-        const imageCountMap: Record<string, number> = {};
-        const embedCountMap: Record<string, number> = {};
-
-        images?.forEach((img) => {
-          if (!coverMap[img.gallery_post_id]) {
-            coverMap[img.gallery_post_id] = img.image_url;
-          }
-          imageCountMap[img.gallery_post_id] = (imageCountMap[img.gallery_post_id] || 0) + 1;
-        });
-
-        embeds?.forEach((emb) => {
-          embedCountMap[emb.gallery_post_id] = (embedCountMap[emb.gallery_post_id] || 0) + 1;
-        });
-
-        galleryItems = galleries.map((g) => ({
-          ...g,
-          cover_url: coverMap[g.id] || null,
-          image_count: imageCountMap[g.id] || 0,
-          embed_count: embedCountMap[g.id] || 0,
-          type: "gallery" as const,
-          comment_count: 0,
-          like_count: 0,
-          liked: false,
-        }));
-      }
-
-      const merged = [...postItems, ...galleryItems].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-
-      const { countMap, likedSet } = await fetchEngagement(
-        supabase,
-        merged.filter((i) => i.type === "post"),
-        merged.filter((i) => i.type === "gallery")
-      );
-
-      setItems(
-        merged.map((item) => ({
-          ...item,
-          comment_count: countMap.get(`${item.type}|${item.id}`)?.comments ?? 0,
-          like_count: countMap.get(`${item.type}|${item.id}`)?.likes ?? 0,
-          liked: likedSet.has(`${item.type}|${item.id}`),
-        }))
-      );
-      setLoading(false);
-    };
-
-    fetchFeed();
-  }, []);
+  const items: FeedItem[] = (data || []).map((r: any) => ({
+    id: r.item_id,
+    type: r.item_type,
+    title: r.title,
+    slug: r.slug,
+    excerpt: r.excerpt,
+    description: r.description,
+    created_at: r.created_at,
+    author: r.author_name
+      ? { name: r.author_name, avatar_url: r.author_avatar }
+      : null,
+    cover_url: r.cover_url,
+    image_count: r.image_count,
+    embed_count: r.embed_count,
+    comment_count: r.comments_n,
+    like_count: r.likes_n,
+    liked: r.liked,
+  }));
 
   return (
     <Box sx={{ bgcolor: "var(--background)", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -272,14 +125,7 @@ export default function Home() {
 
       {/* Catálogo de Obras */}
       <Container maxWidth="md" sx={{ py: { xs: 6, md: 9 }, flex: 1 }}>
-        {loading ? (
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 12, gap: 2 }}>
-            <CircularProgress size={32} sx={{ color: "var(--primary)" }} />
-            <Typography sx={{ fontStyle: "italic", color: "var(--foreground-muted)", fontSize: "0.95rem" }}>
-              Cargando publicaciones...
-            </Typography>
-          </Box>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <Box
             sx={{
               textAlign: "center",
@@ -316,8 +162,10 @@ export default function Home() {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
+                  timeZone: "America/Caracas",
                 })}
                 coverUrl={item.type === "gallery" ? item.cover_url : null}
+                author={item.author}
                 itemCount={
                   item.type === "gallery" ? item.image_count + item.embed_count : undefined
                 }

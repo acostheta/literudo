@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Avatar, Button, Stack, Typography } from "@mui/material";
 import { ArrowForward, AutoStories, PhotoCamera } from "@mui/icons-material";
 import PostEngagement from "@/components/engagement/PostEngagement";
 
@@ -12,6 +12,7 @@ interface FeedCardProps {
   slug: string;
   text: string;
   date: string;
+  author?: { name: string | null; avatar_url: string | null } | null;
   coverUrl?: string | null;
   itemCount?: number;
   commentCount?: number;
@@ -28,6 +29,7 @@ export default function FeedCard({
   slug,
   text,
   date,
+  author,
   coverUrl,
   itemCount,
   commentCount,
@@ -177,6 +179,29 @@ export default function FeedCard({
       >
         {title}
       </Typography>
+
+      {/* Autor */}
+      {author && (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+          <Avatar
+            src={author.avatar_url || undefined}
+            alt={author.name || "Autor"}
+            sx={{ width: 26, height: 26, fontSize: "0.8rem", bgcolor: "var(--primary)" }}
+          >
+            {author.name?.charAt(0).toUpperCase()}
+          </Avatar>
+          <Typography
+            sx={{
+              fontFamily: "var(--font-sans)",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              color: "var(--foreground-muted)",
+            }}
+          >
+            {author.name || "Anónimo"}
+          </Typography>
+        </Box>
+      )}
 
       {/* Resumen o descripción */}
       <Typography
