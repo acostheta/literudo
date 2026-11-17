@@ -79,7 +79,7 @@ export default function PostsPage() {
       setAdmin(admin);
 
       // 2. Construir la consulta según el rol
-      let query = supabase.from("posts").select("*, profiles(name)");
+      let query = supabase.from("posts").select("*, profiles!posts_author_id_fkey(name)");
 
       if (!admin) {
         // Si es "Usuario", solo ve los suyos

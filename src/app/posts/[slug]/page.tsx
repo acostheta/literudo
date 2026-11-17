@@ -203,7 +203,7 @@ export default function PublicPostPage({ params }: { params: Promise<{ slug: str
     const fetchPost = async () => {
       const { data } = await supabase
         .from("posts")
-        .select("*, profiles(name, avatar_url)")
+        .select("*, profiles!posts_author_id_fkey(name, avatar_url)")
         .eq("slug", slug)
         .eq("status", "publicado")
         .single();

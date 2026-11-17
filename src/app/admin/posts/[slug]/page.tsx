@@ -141,7 +141,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
     const fetchPost = async () => {
       const { data, error } = await supabase
         .from("posts")
-        .select("*, profiles(name)")
+        .select("*, profiles!posts_author_id_fkey(name)")
         .eq("slug", slug)
         .single();
 
