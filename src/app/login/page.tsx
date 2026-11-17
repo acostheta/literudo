@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { setRememberCookie } from "@/lib/auth-cookies";
 import PasswordRecoveryWizard from "@/components/PasswordRecoveryWizard";
 import {
   Box,
@@ -32,7 +32,6 @@ import {
 type AuthMode = "login" | "register" | "forgot-password";
 
 export default function LoginPage() {
-  const router = useRouter();
   const supabase = createClient();
   
   const [mode, setMode] = useState<AuthMode>("login");
@@ -57,46 +56,67 @@ export default function LoginPage() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
 
-    if (mode === "login") {
-      const { error } = await supabase.auth.signInWithPassword({ 
-        email: email.trim(), 
-        password: password.trim() 
-      });
-      if (error) {
-        setError("Credenciales incorrectas.");
-        setLoading(false);
-      } else {
-        document.cookie = rememberMe
-          ? `literudo_remember=1; path=/; max-age=2592000; samesite=lax`
-          : `literudo_remember=0; path=/; samesite=lax`;
-        router.push("/admin");
+    try {
+      if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: password.trim(),
+        });
+
+        if (error) {
+          setError(
+            error.message === "Invalid login credentials"
+              ? "Credenciales incorrectas."
+              : error.message,
+          );
+          return;
+        }
+
+        setRememberCookie(rememberMe);
+        // Navegación dura: el middleware tiene que ver las cookies de sesión
+        // recién escritas. Con router.push, si el middleware rebotaba a
+        // /login el componente seguía montado con loading=true.
+        window.location.assign("/admin");
       }
-    } 
-    else if (mode === "register") {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password.trim(),
-        options: {
-          data: { name: name.trim() },
-        },
-      });
-      
-      if (error) {
-        console.error("Auth Error:", error);
-        setError(error.message);
-        setLoading(false);
-      } else {
+      else if (mode === "register") {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password: password.trim(),
+          options: {
+            data: { name: name.trim() },
+          },
+        });
+
+        if (error) {
+          console.error("Auth Error:", {
+            code: error.code,
+            message: error.message,
+            status: error.status,
+          });
+          setError(error.message);
+          return;
+        }
+
         if (data.session) {
-          router.push("/admin");
+          // El alta con sesión también abre sesión: sin esta cookie el
+          // middleware desconectaba al usuario justo después de crear la cuenta.
+          setRememberCookie(rememberMe);
+          window.location.assign("/admin");
         } else {
           setSuccess("¡Cuenta creada! Por favor, revisa tu correo para confirmar y poder entrar.");
-          setLoading(false);
         }
       }
+    } catch (e) {
+      // Fallo de red/timeout: sin esto el botón se queda girando.
+      console.error("Auth Error:", e);
+      setError("No se pudo conectar con el servidor. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -308,7 +328,24 @@ export default function LoginPage() {
                 </Stack>
               </Box>
             )}
-            
+
+            <MuiLink
+              href="/"
+              underline="none"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.5,
+                color: "#5e4a3e",
+                fontFamily: "var(--font-lora), Georgia, serif",
+                fontSize: "0.9rem",
+                "&:hover": { textDecoration: "underline" },
+              }}
+            >
+              <BackIcon sx={{ fontSize: 16 }} />
+              Volver al inicio
+            </MuiLink>
+
             <Typography variant="caption" sx={{ mt: 4, textAlign: "center", display: "block", width: "100%", color: "#8a7568", fontFamily: "var(--font-serif)", fontStyle: "italic" }}>
               © {new Date().getFullYear()} Agrupación Estudiantil Literudo · Universidad de Oriente
             </Typography>

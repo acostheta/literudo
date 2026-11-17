@@ -42,7 +42,11 @@ export async function updateSession(request: NextRequest) {
   // "Recordarme", sign them out (their session cookie was wiped on browser close).
   if (user && authTokenCookie && request.cookies.has(authTokenCookie)) {
     const rememberCookie = request.cookies.get('literudo_remember')
-    if (!rememberCookie || rememberCookie.value !== '1') {
+    // Solo se cierra la sesión cuando la marca DESAPARECIÓ (era cookie de
+    // sesión y el navegador se cerró). Con '0' la sesión sigue viva: si no,
+    // quien entra sin marcar "Recordarme" (o se registra) quedaba fuera al
+    // instante y con el botón del formulario girando para siempre.
+    if (!rememberCookie) {
       const supabaseSignOut = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
