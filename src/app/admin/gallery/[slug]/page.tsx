@@ -3,8 +3,8 @@
 import { useEffect, useState, use, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { POST_STATUS } from "@/lib/permissions";
-import { setGalleryPostStatus } from "../actions";
+import { isAdmin } from "@/lib/permissions";
+import ReviewActions from "@/components/admin/ReviewActions";
 import { GalleryPost } from "@/lib/types/gallery";
 import {
   Box,
@@ -37,6 +37,7 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
   const supabaseRef = useRef(createClient());
 
   useEffect(() => {
@@ -74,11 +75,22 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
           gallery_embeds: embeds || [],
         });
       }
+      setAdmin(await isAdmin(supabaseRef.current));
       setLoading(false);
     };
 
     fetchGallery();
   }, [slug]);
+
+  const refreshReview = async () => {
+    if (!gallery) return;
+    const { data } = await supabaseRef.current
+      .from("gallery_posts")
+      .select("status, needs_review, review_note")
+      .eq("id", gallery.id)
+      .single();
+    if (data) setGallery({ ...gallery, ...data });
+  };
 
   if (loading) {
     return (
@@ -147,27 +159,16 @@ export default function GalleryDetailPage({ params }: { params: Promise<{ slug: 
       </Box>
 
       <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 100 }}>
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="outlined"
-            onClick={async () => {
-              const nuevo = gallery.status === POST_STATUS.published ? POST_STATUS.draft : POST_STATUS.published;
-              const result = await setGalleryPostStatus(gallery.id, nuevo);
-              if (!result.ok) setError(result.error);
-              else setGallery({ ...gallery, status: nuevo as "borrador" | "publicado" });
-            }}
-            sx={{
-              bgcolor: 'white',
-              borderRadius: 0,
-              px: 3,
-              borderColor: gallery.status === "publicado" ? "success.main" : "warning.main",
-              color: gallery.status === "publicado" ? "success.main" : "warning.main",
-              fontWeight: 'bold',
-              '&:hover': { bgcolor: '#f5f5f5' }
-            }}
-          >
-            {gallery.status === "publicado" ? "Pasar a Borrador" : "Publicar Galería"}
-          </Button>
+        <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+          <ReviewActions
+            target="gallery"
+            id={gallery.id}
+            status={gallery.status}
+            needsReview={gallery.needs_review}
+            reviewNote={gallery.review_note}
+            isAdmin={admin}
+            onChanged={refreshReview}
+          />
 
           <Button
             component={Link}

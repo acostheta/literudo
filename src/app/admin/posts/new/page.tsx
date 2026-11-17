@@ -14,15 +14,13 @@ import {
   Alert,
   Breadcrumbs,
   Divider,
-  Select,
-  MenuItem,
-  FormControl,
   Link as MuiLink,
 } from "@mui/material";
 import { Save as SaveIcon, ArrowBack as BackIcon } from "@mui/icons-material";
 import dynamic from "next/dynamic";
 const Editor = dynamic(() => import("@/components/admin/Editor"), { ssr: false });
 import Link from "next/link";
+import { POST_STATUS } from "@/lib/permissions";
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -32,7 +30,6 @@ export default function NewPostPage() {
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState<any>(null);
-  const [status, setStatus] = useState("borrador");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +64,7 @@ export default function NewPostPage() {
         excerpt,
         content,
         author_id: user?.id,
-        status,
+        status: POST_STATUS.draft,
       });
 
       if (saveError) {
@@ -112,22 +109,6 @@ export default function NewPostPage() {
             </Box>
             
             <Stack direction="row" spacing={{ xs: 1.5, md: 3 }} sx={{ alignItems: "center", flexWrap: 'wrap' }}>
-              <FormControl size="small" variant="standard">
-                <Select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  sx={{ 
-                    fontSize: '0.8rem', 
-                    fontWeight: 'bold', 
-                    color: status === "publicado" ? "success.main" : "text.secondary",
-                    '&:before, &:after': { display: 'none' }
-                  }}
-                >
-                  <MenuItem value="borrador">Borrador</MenuItem>
-                  <MenuItem value="publicado">Publicado</MenuItem>
-                </Select>
-              </FormControl>
-
               <MuiLink 
                 component="button"
                 onClick={() => router.back()}
@@ -157,7 +138,7 @@ export default function NewPostPage() {
                   '&:hover': { bgcolor: '#000', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }
                 }}
               >
-                {loading ? "Guardando..." : "Publicar"}
+                {loading ? "Guardando..." : "Guardar borrador"}
               </Button>
             </Stack>
           </Stack>

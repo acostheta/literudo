@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { GalleryPost } from "@/lib/types/gallery";
-import { isAdmin, POST_STATUS } from "@/lib/permissions";
-import { setGalleryPostStatus } from "./actions";
+import { isAdmin, POST_STATUS, POST_STATUS_COLOR, POST_STATUS_LABEL } from "@/lib/permissions";
+import ReviewActions from "@/components/admin/ReviewActions";
 import {
   Box,
   Button,
@@ -22,7 +22,6 @@ import {
   IconButton,
   Stack,
   CircularProgress,
-  Tooltip,
   Alert,
 } from "@mui/material";
 import {
@@ -33,11 +32,24 @@ import {
   Image as ImageIcon,
 } from "@mui/icons-material";
 
+const FILTROS = [
+  { value: "todos", label: "Todos" },
+  { value: "por_revisar", label: "Por revisar" },
+  { value: POST_STATUS.inReview, label: "En revisión" },
+  { value: "editados", label: "Editados" },
+  { value: POST_STATUS.approved, label: "Aprobados" },
+  { value: POST_STATUS.published, label: "Publicados" },
+  { value: POST_STATUS.rejected, label: "Rechazados" },
+  { value: POST_STATUS.draft, label: "Borradores" },
+];
+
 export default function GalleryListPage() {
   const router = useRouter();
   const [galleries, setGalleries] = useState<GalleryPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
+  const [filtro, setFiltro] = useState("todos");
   const supabaseRef = useRef(createClient());
 
   const fetchGalleries = async () => {
@@ -51,6 +63,7 @@ export default function GalleryListPage() {
       }
 
       const admin = await isAdmin(supabase);
+      setAdmin(admin);
 
       let query = supabase.from("gallery_posts").select("*");
 
@@ -115,14 +128,6 @@ export default function GalleryListPage() {
     else fetchGalleries();
   };
 
-  const toggleStatus = async (gallery: GalleryPost) => {
-    setError(null);
-    const nuevo = gallery.status === POST_STATUS.published ? POST_STATUS.draft : POST_STATUS.published;
-    const result = await setGalleryPostStatus(gallery.id, nuevo);
-    if (!result.ok) setError(result.error);
-    else fetchGalleries();
-  };
-
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 10 }}>
@@ -130,6 +135,15 @@ export default function GalleryListPage() {
       </Box>
     );
   }
+
+  const filtradas = galleries.filter((galeria) => {
+    if (filtro === "todos") return true;
+    if (filtro === "por_revisar") {
+      return galeria.status === POST_STATUS.inReview || galeria.needs_review;
+    }
+    if (filtro === "editados") return galeria.needs_review;
+    return galeria.status === filtro;
+  });
 
   return (
     <Box>
@@ -166,29 +180,46 @@ export default function GalleryListPage() {
       {/* Error */}
       {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 0 }} onClose={() => setError(null)}>{error}</Alert>}
 
+      {/* Filtro por estado */}
+      <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 3, flexWrap: "wrap" }}>
+        {FILTROS.map((f) => (
+          <Chip
+            key={f.value}
+            label={f.label}
+            size="small"
+            color={filtro === f.value ? "primary" : "default"}
+            variant={filtro === f.value ? "filled" : "outlined"}
+            onClick={() => setFiltro(f.value)}
+            sx={{ borderRadius: 0, fontWeight: "bold" }}
+          />
+        ))}
+      </Stack>
+
       {/* Desktop Table */}
       <Box sx={{ display: { xs: 'none', md: 'block' } }}>
         <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 0, border: "1px solid #eee" }}>
           <Table sx={{ tableLayout: 'fixed' }}>
             <TableHead sx={{ bgcolor: "#f9f9f9" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: "bold", width: "30%" }}>Título</TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: "20%" }}>Autor</TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: "10%" }}>Imágenes</TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Estado</TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: "15%" }}>Fecha</TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold", width: "10%" }}>Acciones</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "28%" }}>Título</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "14%" }}>Autor</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "8%" }}>Imágenes</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "28%" }}>Estado</TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "10%" }}>Fecha</TableCell>
+                <TableCell align="right" sx={{ fontWeight: "bold", width: "12%" }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {galleries.length === 0 ? (
+              {filtradas.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 10 }}>
-                    <Typography color="text.secondary">No hay galerías todavía.</Typography>
+                    <Typography color="text.secondary">
+                      {galleries.length === 0 ? "No hay galerías todavía." : "No hay galerías con este filtro."}
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
-                galleries.map((gallery) => (
+                filtradas.map((gallery) => (
                   <TableRow
                     key={gallery.id}
                     hover
@@ -207,20 +238,32 @@ export default function GalleryListPage() {
                       </Stack>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
-                      <Tooltip title="Haz clic para cambiar el estatus">
+                      <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: "center", flexWrap: "wrap" }}>
                         <Chip
-                          label={gallery.status === "publicado" ? "Publicado" : "Borrador"}
+                          label={POST_STATUS_LABEL[gallery.status] ?? gallery.status}
                           size="small"
-                          color={gallery.status === "publicado" ? "success" : "default"}
-                          onClick={() => toggleStatus(gallery)}
-                          sx={{
-                            borderRadius: 0,
-                            fontWeight: "bold",
-                            cursor: 'pointer',
-                            '&:hover': { opacity: 0.8 }
-                          }}
+                          color={POST_STATUS_COLOR[gallery.status] ?? "default"}
+                          sx={{ borderRadius: 0, fontWeight: "bold" }}
                         />
-                      </Tooltip>
+                        {gallery.needs_review && (
+                          <Chip
+                            label="Editado"
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                            sx={{ borderRadius: 0, fontWeight: "bold" }}
+                          />
+                        )}
+                        <ReviewActions
+                          target="gallery"
+                          id={gallery.id}
+                          status={gallery.status}
+                          needsReview={gallery.needs_review}
+                          reviewNote={gallery.review_note}
+                          isAdmin={admin}
+                          onChanged={fetchGalleries}
+                        />
+                      </Stack>
                     </TableCell>
                     <TableCell>
                       {new Date(gallery.created_at).toLocaleDateString()}
@@ -248,13 +291,15 @@ export default function GalleryListPage() {
 
       {/* Mobile Cards */}
       <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-        {galleries.length === 0 ? (
+        {filtradas.length === 0 ? (
           <Paper elevation={0} sx={{ p: 4, borderRadius: 0, border: "1px solid #eee", textAlign: 'center' }}>
-            <Typography color="text.secondary">No hay galerías todavía.</Typography>
+            <Typography color="text.secondary">
+              {galleries.length === 0 ? "No hay galerías todavía." : "No hay galerías con este filtro."}
+            </Typography>
           </Paper>
         ) : (
           <Stack spacing={1.5}>
-            {galleries.map((gallery) => (
+            {filtradas.map((gallery) => (
               <Paper
                 key={gallery.id}
                 elevation={0}
@@ -272,16 +317,17 @@ export default function GalleryListPage() {
                     <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>{gallery.title}</Typography>
                     <Typography variant="caption" color="text.secondary">/{gallery.slug}</Typography>
                   </Box>
-                  <Chip
-                    label={gallery.status === "publicado" ? "Publicado" : "Borrador"}
-                    size="small"
-                    color={gallery.status === "publicado" ? "success" : "default"}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleStatus(gallery);
-                    }}
-                    sx={{ borderRadius: 0, fontWeight: "bold", cursor: 'pointer', flexShrink: 0, ml: 1 }}
-                  />
+                  <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0, ml: 1 }}>
+                    <Chip
+                      label={POST_STATUS_LABEL[gallery.status] ?? gallery.status}
+                      size="small"
+                      color={POST_STATUS_COLOR[gallery.status] ?? "default"}
+                      sx={{ borderRadius: 0, fontWeight: "bold" }}
+                    />
+                    {gallery.needs_review && (
+                      <Chip label="Editado" size="small" color="warning" variant="outlined" sx={{ borderRadius: 0, fontWeight: "bold" }} />
+                    )}
+                  </Stack>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1.5 }}>
                   <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
@@ -300,6 +346,17 @@ export default function GalleryListPage() {
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </Stack>
+                </Box>
+                <Box onClick={(e) => e.stopPropagation()} sx={{ mt: 1.5 }}>
+                  <ReviewActions
+                    target="gallery"
+                    id={gallery.id}
+                    status={gallery.status}
+                    needsReview={gallery.needs_review}
+                    reviewNote={gallery.review_note}
+                    isAdmin={admin}
+                    onChanged={fetchGalleries}
+                  />
                 </Box>
               </Paper>
             ))}

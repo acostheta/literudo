@@ -25,13 +25,14 @@ import {
   People as PeopleIcon,
   Article as ArticleIcon,
   EmojiEvents as TrophyIcon,
-  TrendingUp as TrendingIcon,
 } from "@mui/icons-material";
 
 interface Stats {
   activeUsers: number;
   inactiveUsers: number;
   totalPosts: number;
+  publishedPosts: number;
+  pendingReviews: number;
   topUsers: { name: string; avatar_url: string; post_count: number }[];
 }
 
@@ -39,7 +40,16 @@ export default function DashboardPage() {
   const [admin, setAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    getCurrentProfile().then((profile) => setAdmin(isAdminRole(profile?.role)));
+    let vivo = true;
+    // Si la lectura del perfil falla (red, RPC ausente), NO dejamos el spinner
+    // para siempre: el dashboard de Usuario es el modo seguro (menos datos).
+    getCurrentProfile()
+      .then((profile) => { if (vivo) setAdmin(isAdminRole(profile?.role)); })
+      .catch((e) => {
+        console.error("Error cargando el perfil:", e);
+        if (vivo) setAdmin(false);
+      });
+    return () => { vivo = false; };
   }, []);
 
   if (admin === null) {
@@ -60,42 +70,69 @@ function AdminDashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      // 1. Usuarios activos/inactivos
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("status");
-      
-      const active = profiles?.filter(p => p.status === 'activo').length || 0;
-      const inactive = (profiles?.length || 0) - active;
+      try {
+        // 1. Usuarios activos/inactivos
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("status");
 
-      // 2. Total de posts
-      const { count: postCount } = await supabase
-        .from("posts")
-        .select("*", { count: 'exact', head: true });
+        const active = profiles?.filter(p => p.status === 'activo').length || 0;
+        const inactive = (profiles?.length || 0) - active;
 
-      // 3. Top 5 usuarios con más posts
-      // Nota: Supabase client no soporta GROUP BY fácilmente, usaremos una consulta RPC o cruda si fuera necesario, 
-      // pero aquí haremos una lógica simple ya que esperamos pocos usuarios para este demo.
-      const { data: topData } = await supabase
-        .from("profiles")
-        .select("name, avatar_url, posts(id)");
+        // 2. Total de posts y estados
+        const { count: postCount } = await supabase
+          .from("posts")
+          .select("*", { count: 'exact', head: true });
 
-      const sortedUsers = (topData || [])
-        .map(u => ({
-          name: u.name,
-          avatar_url: u.avatar_url,
-          post_count: (u.posts as any[]).length
-        }))
-        .sort((a, b) => b.post_count - a.post_count)
-        .slice(0, 5);
+        const { data: postStates } = await supabase
+          .from("posts")
+          .select("status, needs_review");
 
-      setStats({
-        activeUsers: active,
-        inactiveUsers: inactive,
-        totalPosts: postCount || 0,
-        topUsers: sortedUsers
-      });
-      setLoading(false);
+        const publishedPosts =
+          (postStates || []).filter((p) => p.status === 'publicado').length;
+        const pendingReviews =
+          (postStates || []).filter(
+            (p) => p.status === 'en_revision' || p.needs_review
+          ).length;
+
+        // 3. Top 5 usuarios con más posts
+        // Nota: Supabase client no soporta GROUP BY fácilmente, usaremos una consulta RPC o cruda si fuera necesario, 
+        // pero aquí haremos una lógica simple ya que esperamos pocos usuarios para este demo.
+        const { data: topData } = await supabase
+          .from("profiles")
+          .select("name, avatar_url, posts(id)");
+
+        const sortedUsers = (topData || [])
+          .map(u => ({
+            name: u.name,
+            avatar_url: u.avatar_url,
+            post_count: (u.posts as any[] | null)?.length ?? 0
+          }))
+          .sort((a, b) => b.post_count - a.post_count)
+          .slice(0, 5);
+
+        setStats({
+          activeUsers: active,
+          inactiveUsers: inactive,
+          totalPosts: postCount || 0,
+          publishedPosts,
+          pendingReviews,
+          topUsers: sortedUsers
+        });
+      } catch (e) {
+        // Sin esto, un fallo de red deja el spinner girando para siempre.
+        console.error("Error cargando estadísticas:", e);
+        setStats({
+          activeUsers: 0,
+          inactiveUsers: 0,
+          totalPosts: 0,
+          publishedPosts: 0,
+          pendingReviews: 0,
+          topUsers: []
+        });
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchStats();
@@ -165,18 +202,19 @@ function AdminDashboard() {
         <Grid size={{ xs: 12, md: 4 }}>
           <StatCard 
             title="Artículos publicados" 
-            value={stats?.totalPosts} 
-            subValue="Crecimiento +12%" 
+            value={stats?.publishedPosts} 
+            subValue={`${stats?.totalPosts} en total`}
             color="success.main"
             icon={<ArticleIcon sx={{ fontSize: 100 }} />}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 4 }}>
           <StatCard 
-            title="Tasa de Actividad" 
-            value="85%" 
-            subValue="Comunidad vibrante" 
-            icon={<TrendingIcon sx={{ fontSize: 100 }} />}
+            title="Por revisar" 
+            value={stats?.pendingReviews} 
+            subValue="En revisión o editados" 
+            color="warning.main"
+            icon={<ArticleIcon sx={{ fontSize: 100 }} />}
           />
         </Grid>
 

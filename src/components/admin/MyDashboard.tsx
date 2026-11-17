@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentProfile } from "@/lib/permissions";
+import { getCurrentProfile, POST_STATUS, POST_STATUS_LABEL } from "@/lib/permissions";
 import {
   Avatar,
   Box,
@@ -30,6 +30,7 @@ interface Item {
   id: string;
   title: string;
   status: string;
+  needs_review?: boolean;
   created_at: string;
   type: "articulo" | "galeria";
   href: string;
@@ -52,14 +53,15 @@ export default function MyDashboard() {
 
       const [profileData, { data: posts }, { data: galleries }] = await Promise.all([
         getCurrentProfile(supabase),
-        supabase.from("posts").select("id, title, status, created_at").eq("author_id", user.id),
-        supabase.from("gallery_posts").select("id, title, status, created_at").eq("author_id", user.id),
+        supabase.from("posts").select("id, title, status, needs_review, created_at").eq("author_id", user.id),
+        supabase.from("gallery_posts").select("id, title, status, needs_review, created_at").eq("author_id", user.id),
       ]);
 
       const articles: Item[] = (posts || []).map((p) => ({
         id: p.id,
         title: p.title,
         status: p.status,
+        needs_review: p.needs_review,
         created_at: p.created_at,
         type: "articulo",
         href: `/admin/posts/edit/${p.id}`,
@@ -68,6 +70,7 @@ export default function MyDashboard() {
         id: g.id,
         title: g.title,
         status: g.status,
+        needs_review: g.needs_review,
         created_at: g.created_at,
         type: "galeria",
         href: `/admin/gallery/edit/${g.id}`,
@@ -91,8 +94,11 @@ export default function MyDashboard() {
 
   const articles = items.filter((i) => i.type === "articulo");
   const galleries = items.filter((i) => i.type === "galeria");
-  const published = items.filter((i) => i.status === "publicado").length;
-  const drafts = items.length - published;
+  const published = items.filter((i) => i.status === POST_STATUS.published).length;
+  const pending = items.filter(
+    (i) => i.status === POST_STATUS.inReview || i.needs_review
+  ).length;
+  const drafts = items.filter((i) => i.status === POST_STATUS.draft).length;
 
   const StatCard = ({ title, value, subValue, icon }: { title: string; value: number; subValue: string; icon: React.ReactNode }) => (
     <Paper elevation={0} sx={{ p: 3, borderRadius: 0, border: "1px solid #eee", height: "100%", position: "relative", overflow: "hidden" }}>
@@ -171,13 +177,13 @@ export default function MyDashboard() {
         <Grid size={{ xs: 12, md: 7 }}>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <StatCard title="Artículos" value={articles.length} subValue={`${articles.filter((a) => a.status === "publicado").length} publicados`} icon={<ArticleIcon sx={{ fontSize: 100 }} />} />
+              <StatCard title="Artículos" value={articles.length} subValue={`${articles.filter((a) => a.status === POST_STATUS.published).length} publicados`} icon={<ArticleIcon sx={{ fontSize: 100 }} />} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <StatCard title="Galerías" value={galleries.length} subValue={`${galleries.filter((g) => g.status === "publicado").length} publicadas`} icon={<ImageIcon sx={{ fontSize: 100 }} />} />
+              <StatCard title="Galerías" value={galleries.length} subValue={`${galleries.filter((g) => g.status === POST_STATUS.published).length} publicadas`} icon={<ImageIcon sx={{ fontSize: 100 }} />} />
             </Grid>
             <Grid size={{ xs: 12, sm: 4 }}>
-              <StatCard title="Borradores" value={drafts} subValue={`${published} publicados en total`} icon={<EditIcon sx={{ fontSize: 100 }} />} />
+              <StatCard title="Por revisar" value={pending} subValue={`${drafts} borradores · ${published} publicados`} icon={<EditIcon sx={{ fontSize: 100 }} />} />
             </Grid>
 
             <Grid size={{ xs: 12 }}>
@@ -193,7 +199,7 @@ export default function MyDashboard() {
                     }>
                       <ListItemText
                         primary={<Typography sx={{ fontWeight: 700 }}>{item.title}</Typography>}
-                        secondary={`${item.type === "articulo" ? "Artículo" : "Galería"} · ${item.status === "publicado" ? "Publicado" : "Borrador"} · ${formatDate(item.created_at)}`}
+                        secondary={`${item.type === "articulo" ? "Artículo" : "Galería"} · ${POST_STATUS_LABEL[item.status] ?? item.status}${item.needs_review ? " · Editado" : ""} · ${formatDate(item.created_at)}`}
                       />
                     </ListItem>
                   ))}

@@ -4,7 +4,11 @@ export interface GalleryPost {
   title: string;
   description: string | null;
   author_id: string;
-  status: 'borrador' | 'publicado';
+  status: 'borrador' | 'en_revision' | 'aprobado' | 'publicado' | 'rechazado';
+  needs_review?: boolean;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_note?: string | null;
   created_at: string;
   updated_at: string;
   profiles?: { name: string; avatar_url?: string } | null;

@@ -3,7 +3,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { ROLES, STATUS, isAdmin } from "@/lib/permissions";
-import type { ActionResult } from "@/app/admin/posts/actions";
+import type { ActionResult } from "@/app/admin/review-actions";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

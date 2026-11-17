@@ -339,7 +339,6 @@ export default function GalleryForm({
             title,
             slug: generatedSlug,
             description: description || null,
-            status,
             updated_at: new Date().toISOString(),
           })
           .eq("id", galleryId);

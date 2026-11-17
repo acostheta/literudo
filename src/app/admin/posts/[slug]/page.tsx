@@ -3,8 +3,8 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { POST_STATUS } from "@/lib/permissions";
-import { setPostStatus } from "../actions";
+import { isAdmin } from "@/lib/permissions";
+import ReviewActions from "@/components/admin/ReviewActions";
 import {
   Box,
   Container,
@@ -134,6 +134,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -145,11 +146,21 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
         .single();
 
       if (data) setPost(data);
+      setAdmin(await isAdmin(supabase));
       setLoading(false);
     };
 
     fetchPost();
   }, [slug]);
+
+  const refreshReview = async () => {
+    const { data } = await supabase
+      .from("posts")
+      .select("status, needs_review, review_note")
+      .eq("id", post.id)
+      .single();
+    if (data) setPost({ ...post, ...data });
+  };
 
   if (loading) {
     return (
@@ -199,27 +210,16 @@ export default function PostDetailPage({ params }: { params: Promise<{ slug: str
       </Box>
 
       <Box sx={{ position: 'fixed', top: 20, right: 20, zIndex: 100 }}>
-        <Stack direction="row" spacing={2}>
-          <Button 
-            variant="outlined"
-            onClick={async () => {
-              const nuevo = post.status === POST_STATUS.published ? POST_STATUS.draft : POST_STATUS.published;
-              const result = await setPostStatus(post.id, nuevo);
-              if (!result.ok) setError(result.error);
-              else setPost({ ...post, status: nuevo });
-            }}
-            sx={{ 
-              bgcolor: 'white', 
-              borderRadius: 0, 
-              px: 3,
-              borderColor: post.status === "publicado" ? "success.main" : "warning.main",
-              color: post.status === "publicado" ? "success.main" : "warning.main",
-              fontWeight: 'bold',
-              '&:hover': { bgcolor: '#f5f5f5', borderColor: post.status === "publicado" ? "success.dark" : "warning.dark" }
-            }}
-          >
-            {post.status === "publicado" ? "Pasar a Borrador" : "Publicar artículo"}
-          </Button>
+        <Stack direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
+          <ReviewActions
+            target="post"
+            id={post.id}
+            status={post.status}
+            needsReview={post.needs_review}
+            reviewNote={post.review_note}
+            isAdmin={admin}
+            onChanged={refreshReview}
+          />
 
           <Button 
             component={Link} 

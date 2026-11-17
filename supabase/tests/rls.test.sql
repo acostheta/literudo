@@ -13,7 +13,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(28);
+select plan(40);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures (como postgres, sin RLS)
@@ -231,6 +231,136 @@ reset role;
 select is((select count(*) from public.comments
            where id = '50000000-0000-4000-8000-000000000001'), 1::bigint,
   'un Usuario no borra el comentario de otro');
+
+-- ---------------------------------------------------------------------------
+-- Flujo de revisión: solo el admin aprueba; editar un publicado solo marca
+-- ---------------------------------------------------------------------------
+select pg_temp.como('00000000-0000-4000-8000-000000000002');
+
+select throws_ok(
+  $$ insert into public.posts (title, slug, content, author_id, status)
+     values ('Publicado directo', 'publicado-directo', '{}', auth.uid(), 'publicado') $$,
+  '42501', null,
+  'un Usuario no puede insertar un articulo ya publicado');
+
+insert into public.posts (id, title, slug, content, author_id, status)
+values ('10000000-0000-4000-8000-000000000005',
+        'En revision', 'en-revision', '{}',
+        '00000000-0000-4000-8000-000000000002', 'en_revision');
+
+select throws_ok(
+  $$ update public.posts set status = 'aprobado'
+     where id = '10000000-0000-4000-8000-000000000005' $$,
+  '42501', null,
+  'un Usuario no puede aprobar su articulo');
+
+select pg_temp.como('00000000-0000-4000-8000-000000000001');
+
+update public.posts
+set status = 'aprobado', reviewed_by = auth.uid(), reviewed_at = now()
+where id = '10000000-0000-4000-8000-000000000005';
+
+select is(
+  (select status from public.posts where id = '10000000-0000-4000-8000-000000000005'),
+  'aprobado'::text,
+  'el Administrador aprueba el articulo');
+
+select pg_temp.como('00000000-0000-4000-8000-000000000002');
+
+update public.posts set status = 'publicado'
+where id = '10000000-0000-4000-8000-000000000005';
+
+update public.posts set title = 'Editado despues'
+where id = '10000000-0000-4000-8000-000000000005';
+
+select is(
+  (select count(*) from public.posts
+   where id = '10000000-0000-4000-8000-000000000005'
+     and status = 'publicado' and needs_review),
+  1::bigint,
+  'editar un publicado lo deja visible y marcado para revision');
+
+update public.posts set needs_review = false
+where id = '10000000-0000-4000-8000-000000000005';
+
+select is(
+  (select needs_review from public.posts where id = '10000000-0000-4000-8000-000000000005'),
+  true,
+  'el autor no puede limpiar el aviso de editado');
+
+select pg_temp.como('00000000-0000-4000-8000-000000000001');
+
+update public.posts set needs_review = false
+where id = '10000000-0000-4000-8000-000000000005';
+
+select is(
+  (select needs_review from public.posts where id = '10000000-0000-4000-8000-000000000005'),
+  false,
+  'el Administrador limpia el aviso de editado');
+
+select throws_ok(
+  $$ update public.posts
+     set status = 'rechazado', reviewed_by = auth.uid(), reviewed_at = now()
+     where id = '10000000-0000-4000-8000-000000000005' $$,
+  '23514', null,
+  'rechazar exige un motivo');
+
+update public.posts
+set status = 'rechazado', review_note = 'Corrige el final',
+    reviewed_by = auth.uid(), reviewed_at = now()
+where id = '10000000-0000-4000-8000-000000000005';
+
+select is(
+  (select status from public.posts where id = '10000000-0000-4000-8000-000000000005'),
+  'rechazado'::text,
+  'el Administrador rechaza con motivo');
+
+select pg_temp.como('00000000-0000-4000-8000-000000000002');
+
+update public.posts set status = 'en_revision'
+where id = '10000000-0000-4000-8000-000000000005';
+
+select is(
+  (select status from public.posts where id = '10000000-0000-4000-8000-000000000005'),
+  'en_revision'::text,
+  'el autor reenvia a revision un rechazado');
+
+-- Galerías: mismo flujo
+select throws_ok(
+  $$ insert into public.gallery_posts (slug, title, author_id, status)
+     values ('galeria-publicada', 'Galeria publicada', auth.uid(), 'publicado') $$,
+  '42501', null,
+  'un Usuario no puede publicar una galeria directamente');
+
+insert into public.gallery_posts (id, slug, title, author_id, status)
+values ('20000000-0000-4000-8000-000000000002', 'galeria-en-revision',
+        'Galeria en revision', '00000000-0000-4000-8000-000000000002', 'en_revision');
+
+select pg_temp.como('00000000-0000-4000-8000-000000000001');
+
+update public.gallery_posts
+set status = 'aprobado', reviewed_by = auth.uid(), reviewed_at = now()
+where id = '20000000-0000-4000-8000-000000000002';
+
+select is(
+  (select status from public.gallery_posts where id = '20000000-0000-4000-8000-000000000002'),
+  'aprobado'::text,
+  'el Administrador aprueba la galeria');
+
+select pg_temp.como('00000000-0000-4000-8000-000000000002');
+
+update public.gallery_posts set status = 'publicado'
+where id = '20000000-0000-4000-8000-000000000002';
+
+insert into public.gallery_images (gallery_post_id, image_url)
+values ('20000000-0000-4000-8000-000000000002', 'revision.jpg');
+
+select is(
+  (select count(*) from public.gallery_posts
+   where id = '20000000-0000-4000-8000-000000000002'
+     and status = 'publicado' and needs_review),
+  1::bigint,
+  'agregar imagenes a una galeria publicada la marca para revision');
 
 -- ---------------------------------------------------------------------------
 -- Administrador: acceso total, auditado

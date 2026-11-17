@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { canManageContent } from "@/lib/permissions";
+import { canManageContent, isAdmin as checkIsAdmin, POST_STATUS_COLOR, POST_STATUS_LABEL } from "@/lib/permissions";
+import ReviewActions from "@/components/admin/ReviewActions";
 import {
   Box,
   Container,
@@ -15,9 +16,7 @@ import {
   Alert,
   Breadcrumbs,
   Divider,
-  Select,
-  MenuItem,
-  FormControl,
+  Chip,
   CircularProgress,
   Link as MuiLink,
 } from "@mui/material";
@@ -36,6 +35,9 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState<any>(null);
   const [status, setStatus] = useState("borrador");
+  const [needsReview, setNeedsReview] = useState(false);
+  const [reviewNote, setReviewNote] = useState<string | null>(null);
+  const [admin, setAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +58,9 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
         setExcerpt(data.excerpt || "");
         setContent(data.content);
         setStatus(data.status);
+        setNeedsReview(Boolean(data.needs_review));
+        setReviewNote(data.review_note ?? null);
+        setAdmin(await checkIsAdmin(supabase));
       } else if (error) {
         setError("No se pudo cargar el artículo: " + error.message);
       }
@@ -82,7 +87,6 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
           slug,
           excerpt,
           content,
-          status,
           updated_at: new Date().toISOString(),
         })
         .eq("id", id);
@@ -97,6 +101,19 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
       setError(err.message || "No se pudo guardar el artículo.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const refreshReview = async () => {
+    const { data } = await supabase
+      .from("posts")
+      .select("status, needs_review, review_note")
+      .eq("id", id)
+      .single();
+    if (data) {
+      setStatus(data.status);
+      setNeedsReview(Boolean(data.needs_review));
+      setReviewNote(data.review_note ?? null);
     }
   };
 
@@ -136,21 +153,21 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
             </Box>
             
             <Stack direction="row" spacing={{ xs: 1.5, md: 3 }} sx={{ alignItems: "center", flexWrap: 'wrap' }}>
-              <FormControl size="small" variant="standard">
-                <Select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  sx={{ 
-                    fontSize: '0.8rem', 
-                    fontWeight: 'bold', 
-                    color: status === "publicado" ? "success.main" : "text.secondary",
-                    '&:before, &:after': { display: 'none' }
-                  }}
-                >
-                  <MenuItem value="borrador">Borrador</MenuItem>
-                  <MenuItem value="publicado">Publicado</MenuItem>
-                </Select>
-              </FormControl>
+              <Chip
+                label={POST_STATUS_LABEL[status] ?? status}
+                color={POST_STATUS_COLOR[status] ?? "default"}
+                size="small"
+                sx={{ borderRadius: 0, fontWeight: "bold" }}
+              />
+              <ReviewActions
+                target="post"
+                id={id}
+                status={status}
+                needsReview={needsReview}
+                reviewNote={reviewNote}
+                isAdmin={admin}
+                onChanged={refreshReview}
+              />
 
               <MuiLink 
                 component="button"

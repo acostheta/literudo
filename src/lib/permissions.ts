@@ -4,7 +4,32 @@ import { createClient } from "@/lib/supabase/client";
 // Valores cerrados en la DB (CHECK en supabase/migrations) y en la UI.
 export const ROLES = { admin: "Administrador", user: "Usuario" } as const;
 export const STATUS = { active: "activo", inactive: "inactivo" } as const;
-export const POST_STATUS = { published: "publicado", draft: "borrador" } as const;
+export const POST_STATUS = {
+  draft: "borrador",
+  inReview: "en_revision",
+  approved: "aprobado",
+  published: "publicado",
+  rejected: "rechazado",
+} as const;
+
+export const POST_STATUS_LABEL: Record<string, string> = {
+  [POST_STATUS.draft]: "Borrador",
+  [POST_STATUS.inReview]: "En revisión",
+  [POST_STATUS.approved]: "Aprobado",
+  [POST_STATUS.published]: "Publicado",
+  [POST_STATUS.rejected]: "Rechazado",
+};
+
+export const POST_STATUS_COLOR: Record<
+  string,
+  "default" | "warning" | "info" | "success" | "error"
+> = {
+  [POST_STATUS.draft]: "default",
+  [POST_STATUS.inReview]: "warning",
+  [POST_STATUS.approved]: "info",
+  [POST_STATUS.published]: "success",
+  [POST_STATUS.rejected]: "error",
+};
 
 export interface Profile {
   id: string;
