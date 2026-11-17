@@ -267,12 +267,20 @@ export default function Footer() {
             fontFamily: "var(--font-sans)",
           }}
         >
-          <span>
-            © {new Date().getFullYear()} Agrupación Estudiantil Literudo. Todos los derechos reservados.
-          </span>
-          <span style={{ fontStyle: "italic", fontFamily: "var(--font-serif)" }}>
-            Agrupación Estudiantil Literudo
-          </span>
+          <span>© {new Date().getFullYear()} Agrupación Estudiantil Literudo</span>
+          <a
+            href="https://acostheta.github.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "#e2d5c7",
+              textDecoration: "none",
+              fontStyle: "italic",
+              fontFamily: "var(--font-serif)",
+            }}
+          >
+            Hecho con cariño por @acostheta
+          </a>
         </div>
       </div>
     </footer>
