@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { canManageContent, isAdmin as checkIsAdmin, POST_STATUS_COLOR, POST_STATUS_LABEL } from "@/lib/permissions";
+import { canManageContent, isAdmin as checkIsAdmin, POST_STATUS, POST_STATUS_COLOR, POST_STATUS_LABEL } from "@/lib/permissions";
 import ReviewActions from "@/components/admin/ReviewActions";
 import {
   Box,
@@ -41,6 +41,8 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const enviarARevision =
+    status === POST_STATUS.draft || status === POST_STATUS.rejected;
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -87,6 +89,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
           slug,
           excerpt,
           content,
+          ...(enviarARevision ? { status: POST_STATUS.inReview } : {}),
           updated_at: new Date().toISOString(),
         })
         .eq("id", id);
@@ -198,7 +201,11 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                   '&:hover': { bgcolor: '#000', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }
                 }}
               >
-                {saving ? "Guardando..." : "Guardar Cambios"}
+                {saving
+                  ? "Guardando..."
+                  : enviarARevision
+                    ? "Guardar y enviar a revisión"
+                    : "Guardar Cambios"}
               </Button>
             </Stack>
           </Stack>
