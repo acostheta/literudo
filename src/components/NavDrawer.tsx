@@ -19,9 +19,6 @@ import {
   AutoStories,
   CollectionsBookmark,
   PhotoCamera,
-  Newspaper,
-  Groups,
-  Mail,
   AdminPanelSettings,
   Login,
 } from "@mui/icons-material";
@@ -35,9 +32,6 @@ const navItems = [
   { href: "/", label: "Inicio", icon: AutoStories },
   { href: "/posts", label: "Artículos", icon: CollectionsBookmark },
   { href: "/gallery", label: "Galería", icon: PhotoCamera },
-  { href: "/noticias", label: "Noticias", icon: Newspaper },
-  { href: "/sobre-nosotros", label: "Sobre Nosotros", icon: Groups },
-  { href: "/contacto", label: "Contáctanos", icon: Mail },
   { href: "/admin", label: "Panel", icon: AdminPanelSettings },
 ];
 
